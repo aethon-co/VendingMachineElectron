@@ -1,0 +1,12 @@
+{
+    "appId": "com.aethon.vending-machine",
+    "files": ["dist-electron", "dist-react"],
+    "extraResources": ["dist-electron/preload.cjs", "src/assets/**"],
+    "mac": {
+        "target": "dmg"
+    },
+    "linux": {
+        "target": "AppImage",
+        "category": "Utility"
+    }
+}
