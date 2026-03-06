@@ -18,6 +18,23 @@ function App() {
   const [needsSetup, setNeedsSetup] = useState(false);
   const [secretTokenInput, setSecretTokenInput] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [qrEncryptedPayload, setQrEncryptedPayload] = useState<string>("");
+
+  useEffect(() => {
+    // Generate QR Code Payload asynchronously if machine is unlinked
+    const generateSecureQr = async () => {
+      if (machineData && !machineData.institute_id) {
+        const qrPayload = JSON.stringify({
+          machine_id: machineData.id || machineData._id,
+          name: machineData.name,
+          timestamp: Date.now()
+        });
+        const encrypted = await window.electron.encrypt(qrPayload);
+        setQrEncryptedPayload(encrypted);
+      }
+    };
+    generateSecureQr();
+  }, [machineData]);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -179,19 +196,17 @@ function App() {
     );
   }
 
-  // 2. Unlinked Machine Screen (QR Code)
-  if (machineData && !machineData.institute_id) {
-    // Generate QR payload - we'll send the raw ID and mobile app will call /link
-    const qrPayload = JSON.stringify({
-      machine_id: machineData.id || machineData._id,
-      name: machineData.name,
-      timestamp: Date.now()
-    });
 
+
+  if (machineData && !machineData.institute_id) {
     return (
       <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white border border-[#333] shadow-2xl overflow-hidden'>
         <div className="bg-white p-6 rounded-2xl mb-8">
-          <QRCodeSVG value={qrPayload} size={250} level="H" />
+          {qrEncryptedPayload ? (
+            <QRCodeSVG value={qrEncryptedPayload} size={250} level="H" />
+          ) : (
+            <div className="w-[250px] h-[250px] flex items-center justify-center text-black">Generating...</div>
+          )}
         </div>
         <h1 className="text-3xl font-black mb-2 text-[#f3f4f6]">Action Required</h1>
         <p className="text-gray-400 font-medium text-center px-12 mb-8 leading-relaxed">
