@@ -104,8 +104,74 @@ app.on("ready", async () => {
       return await response.json();
     });
 
-    ipcMain.handle('vending:saveMachineId', (_, id: string) => {
+    ipcMain.handle('vending:saveMachineId', (_, id: string, name?: string) => {
       store.set('machine_id', id);
+      if (name) store.set('machine_name', name);
+      return true;
+    });
+
+    // 5. Razorpay helpers
+    const getRazorpayAuth = () => {
+      const keyId = process.env.RAZORPAY_KEY_ID;
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      if (!keyId || !keySecret) throw new Error("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set in environment");
+      return "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+    };
+
+    // 5a. Create a single-use UPI QR code for the given amount
+    ipcMain.handle('vending:createPaymentQR', async (_, amountInRupees: number) => {
+      const auth = getRazorpayAuth();
+      const closeBy = Math.floor(Date.now() / 1000) + 20 * 60; // 20-minute window
+      const machineName = (store.get('machine_name') as string) || "Vending Machine";
+
+      const body = {
+        type: "upi_qr",
+        name: machineName,
+        usage: "single_use",
+        fixed_amount: true,
+        payment_amount: amountInRupees * 100, // paise
+        description: "Vending Machine Order",
+        close_by: closeBy,
+      };
+
+      const res = await fetch("https://api.razorpay.com/v1/payments/qr_codes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: auth,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).error?.description || "Failed to create Razorpay QR code");
+      }
+
+      const data: any = await res.json();
+      return { qrId: data.id, imageUrl: data.image_url, amount: amountInRupees };
+    });
+
+    // 5b. Poll for payment on a QR code
+    ipcMain.handle('vending:checkQRPayment', async (_, qrId: string) => {
+      const auth = getRazorpayAuth();
+      const res = await fetch(
+        `https://api.razorpay.com/v1/payments/qr_codes/${qrId}/payments`,
+        { headers: { Authorization: auth } }
+      );
+      if (!res.ok) return { paid: false };
+      const data: any = await res.json();
+      const captured = (data.items || []).find((p: any) => p.status === "captured");
+      return { paid: !!captured, paymentId: captured?.id };
+    });
+
+    // 5c. Close a QR code on cancel/timeout
+    ipcMain.handle('vending:closePaymentQR', async (_, qrId: string) => {
+      const auth = getRazorpayAuth();
+      await fetch(`https://api.razorpay.com/v1/payments/qr_codes/${qrId}/close`, {
+        method: "POST",
+        headers: { Authorization: auth },
+      }).catch(() => {});
       return true;
     });
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css'
 import ItemCard from './components/itemCard'
 import OrderFooter from './components/orderFooter'
+import PaymentQR from './components/paymentQR'
 import { FaWifi, FaSync } from 'react-icons/fa';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -19,6 +20,11 @@ function App() {
   const [secretTokenInput, setSecretTokenInput] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [qrEncryptedPayload, setQrEncryptedPayload] = useState<string>("");
+
+  // Razorpay payment QR state
+  const [showPaymentQR, setShowPaymentQR] = useState(false);
+  const [isCreatingQR, setIsCreatingQR] = useState(false);
+  const [paymentQRData, setPaymentQRData] = useState<{ qrId: string; imageUrl: string; amount: number } | null>(null);
 
   useEffect(() => {
     // Generate QR Code Payload asynchronously if machine is unlinked
@@ -77,9 +83,11 @@ function App() {
       setItems(data.machine?.items || data.items || []);
       setNeedsSetup(false);
 
-      // Save ID for heartbeat
-      if (data.id || data.machine?.id) {
-        window.electron.saveMachineId(data.id || data.machine?.id);
+      // Save ID (and name) for heartbeat & QR labelling
+      const machineId = data.id || data.machine?.id;
+      const machineName = data.name || data.machine?.name;
+      if (machineId) {
+        window.electron.saveMachineId(machineId, machineName);
       }
     } catch (e) {
       console.error("Failed to load machine data:", e);
@@ -141,12 +149,33 @@ function App() {
     setCart({});
   };
 
-  const handlePayNow = () => {
+  const handleInitiatePayment = async () => {
+    if (cartTotal === 0) return;
+    try {
+      setIsCreatingQR(true);
+      const qrData = await window.electron.createPaymentQR(cartTotal);
+      setPaymentQRData(qrData);
+      setShowPaymentQR(true);
+    } catch (e: any) {
+      alert("Could not create payment QR: " + (e?.message || "Unknown error"));
+    } finally {
+      setIsCreatingQR(false);
+    }
+  };
+
+  const handlePaymentSuccess = (_paymentId: string) => {
+    setShowPaymentQR(false);
+    setPaymentQRData(null);
     setPaymentSuccess(true);
     setTimeout(() => {
       setPaymentSuccess(false);
       handleClearOrder();
-    }, 3000);
+    }, 4000);
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentQR(false);
+    setPaymentQRData(null);
   };
 
   if (isOffline) {
@@ -227,7 +256,20 @@ function App() {
     );
   }
 
-  // 3. Payment Success Screen
+  // 3. Razorpay QR Payment Screen
+  if (showPaymentQR && paymentQRData) {
+    return (
+      <PaymentQR
+        qrId={paymentQRData.qrId}
+        imageUrl={paymentQRData.imageUrl}
+        amount={paymentQRData.amount}
+        onSuccess={handlePaymentSuccess}
+        onCancel={handlePaymentCancel}
+      />
+    );
+  }
+
+  // 4. Payment Success Screen
   if (paymentSuccess) {
     return (
       <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white border border-[#333] shadow-2xl overflow-hidden'>
@@ -241,7 +283,7 @@ function App() {
     );
   }
 
-  // 4. Main Kiosk Screen
+  // 5. Main Kiosk Screen
   return (
     <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col items-center text-white border border-[#333] shadow-2xl overflow-hidden'>
       <div className="w-full flex justify-between items-center px-[4%] mt-6">
@@ -261,7 +303,7 @@ function App() {
         )}
       </div>
 
-      <OrderFooter total={cartTotal} onClear={handleClearOrder} onPay={handlePayNow} />
+      <OrderFooter total={cartTotal} onClear={handleClearOrder} onPay={handleInitiatePayment} isLoading={isCreatingQR} />
     </div>
   )
 }
