@@ -110,6 +110,25 @@ app.on("ready", async () => {
       return true;
     });
 
+    ipcMain.handle('vending:purchase', async (_, items: { row: number, quantity: number }[]) => {
+      const token = readSecurely('secret_token');
+      const machineId = store.get('machine_id');
+      if (!token || !machineId) throw new Error("Machine not initialized");
+
+      const response = await fetch(`${BACKEND_URL}/vending/purchase`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret_token: token, machine_id: machineId, items })
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to sync purchase with backend");
+      }
+
+      return await response.json();
+    });
+
     // 5. Razorpay helpers
     const getRazorpayAuth = () => {
       const keyId = process.env.RAZORPAY_KEY_ID;
@@ -171,7 +190,7 @@ app.on("ready", async () => {
       await fetch(`https://api.razorpay.com/v1/payments/qr_codes/${qrId}/close`, {
         method: "POST",
         headers: { Authorization: auth },
-      }).catch(() => {});
+      }).catch(() => { });
       return true;
     });
 

@@ -10,4 +10,5 @@ contextBridge.exposeInMainWorld("electron", {
     createPaymentQR: async (amountInRupees: number) => await ipcRenderer.invoke('vending:createPaymentQR', amountInRupees),
     checkQRPayment: async (qrId: string) => await ipcRenderer.invoke('vending:checkQRPayment', qrId),
     closePaymentQR: async (qrId: string) => await ipcRenderer.invoke('vending:closePaymentQR', qrId),
+    purchase: async (items: { row: number, quantity: number }[]) => await ipcRenderer.invoke('vending:purchase', items),
 })

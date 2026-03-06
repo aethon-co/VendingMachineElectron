@@ -163,13 +163,38 @@ function App() {
     }
   };
 
-  const handlePaymentSuccess = (_paymentId: string) => {
+  const handlePaymentSuccess = async (_paymentId: string) => {
     setShowPaymentQR(false);
     setPaymentQRData(null);
     setPaymentSuccess(true);
+
+    // Deduct stock in backend
+    try {
+      const purchaseItems = Object.keys(cart)
+        .map(itemId => {
+          const item = items.find(i => i.id === itemId || i._id === itemId);
+          if (!item) return null;
+          return {
+            row: Number(item.row),
+            quantity: Number(cart[itemId])
+          };
+        })
+        .filter((item): item is { row: number; quantity: number } => item !== null);
+
+      if (purchaseItems.length > 0) {
+        const res = await window.electron.purchase(purchaseItems);
+        if (res && res.items) {
+          setItems(res.items); // immediately update local UI stock
+        }
+      }
+    } catch (e) {
+      console.error("Failed to deduct stock physically in backend", e);
+    }
+
     setTimeout(() => {
       setPaymentSuccess(false);
-      handleClearOrder();
+      setCart({});
+      setCartTotal(0); // Also clear cart total
     }, 4000);
   };
 

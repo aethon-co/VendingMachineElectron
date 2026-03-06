@@ -9,5 +9,6 @@ interface Window {
         createPaymentQR: (amountInRupees: number) => Promise<{ qrId: string; imageUrl: string; amount: number }>;
         checkQRPayment: (qrId: string) => Promise<{ paid: boolean; paymentId?: string }>;
         closePaymentQR: (qrId: string) => Promise<boolean>;
+        purchase: (items: { row: number, quantity: number }[]) => Promise<any>;
     };
 }
