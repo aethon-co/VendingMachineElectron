@@ -1,21 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimesCircle } from "react-icons/fa";
+import { QRCodeSVG } from "qrcode.react";
 
 interface PaymentQRProps {
   qrId: string;
   imageUrl: string;
+  imageDataUrl: string;
+  shortUrl: string;
   amount: number;
   onSuccess: (paymentId: string) => void;
   onCancel: () => void;
 }
 
 const POLL_INTERVAL_MS = 3000;
-const EXPIRY_SECONDS = 20 * 60; // must match main.ts expire_by window (Razorpay enforces strict >15 min)
+const EXPIRY_SECONDS = 20 * 60;
 
-const PaymentQR = ({ qrId, imageUrl, amount, onSuccess, onCancel }: PaymentQRProps) => {
+const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, onCancel }: PaymentQRProps) => {
   const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS);
   const [isExpired, setIsExpired] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [imageFailed, setImageFailed] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -44,11 +48,10 @@ const PaymentQR = ({ qrId, imageUrl, amount, onSuccess, onCancel }: PaymentQRPro
           clearInterval(timerRef.current!);
           onSuccess(result.paymentId || "");
         }
-      } catch (e) {
+      } catch {
         setErrorMsg("Network error while checking payment.");
       }
     }, POLL_INTERVAL_MS);
-
     return () => clearInterval(pollRef.current!);
   }, [qrId, onSuccess]);
 
@@ -84,14 +87,27 @@ const PaymentQR = ({ qrId, imageUrl, amount, onSuccess, onCancel }: PaymentQRPro
           <p className="text-red-400 font-semibold text-lg text-center">QR Code Expired</p>
           <p className="text-gray-500 text-sm text-center mt-2">Please go back and try again.</p>
         </div>
-      ) : (
-        <div className="bg-white p-5 rounded-2xl mb-6 shadow-lg">
+      ) : (imageDataUrl || imageUrl) && !imageFailed ? (
+        <div className="bg-white p-5 rounded-2xl mb-6 shadow-lg flex items-center justify-center">
           <img
-            src={imageUrl}
+            src={imageDataUrl || imageUrl}
             alt="UPI Payment QR Code"
             className="w-[230px] h-[230px] object-contain"
-            onError={() => setErrorMsg("Failed to load QR image.")}
+            onError={() => {
+              setImageFailed(true);
+              setErrorMsg("QR image unavailable. Switched to fallback QR.");
+            }}
           />
+        </div>
+      ) : (shortUrl || imageUrl) ? (
+        <div className="bg-white p-5 rounded-2xl mb-6 shadow-lg flex items-center justify-center">
+          <QRCodeSVG value={shortUrl || imageUrl} size={230} level="H" includeMargin />
+        </div>
+      ) : (
+        <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center mb-6">
+          <FaTimesCircle size={64} className="text-red-500 mb-4" />
+          <p className="text-red-400 font-semibold text-lg text-center">QR Unavailable</p>
+          <p className="text-gray-500 text-sm text-center mt-2">Please cancel and try again.</p>
         </div>
       )}
 
@@ -106,9 +122,7 @@ const PaymentQR = ({ qrId, imageUrl, amount, onSuccess, onCancel }: PaymentQRPro
         <div className="w-full mb-6">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
             <span>QR expires in</span>
-            <span className={isWarning ? "text-red-400 font-bold" : "text-gray-400"}>
-              {mm}:{ss}
-            </span>
+            <span className={isWarning ? "text-red-400 font-bold" : "text-gray-400"}>{mm}:{ss}</span>
           </div>
           <div className="w-full h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
             <div
@@ -121,25 +135,20 @@ const PaymentQR = ({ qrId, imageUrl, amount, onSuccess, onCancel }: PaymentQRPro
 
       {/* Polling indicator */}
       {!isExpired && (
-        <div className="flex items-center gap-2 text-gray-500 text-xs mb-6">
+        <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span>Waiting for payment confirmation...</span>
         </div>
       )}
 
-      {/* Error */}
-      {errorMsg && (
-        <p className="text-red-400 text-xs mb-4 text-center">{errorMsg}</p>
-      )}
+      {errorMsg && <p className="text-red-400 text-xs mb-4 text-center">{errorMsg}</p>}
 
-      {/* UPI badge hints */}
       {!isExpired && (
         <p className="text-gray-600 text-xs text-center mb-6 px-6 leading-relaxed">
           Works with GPay, PhonePe, Paytm, BHIM, and all UPI-enabled apps.
         </p>
       )}
 
-      {/* Cancel button */}
       <button
         onClick={handleCancel}
         className="w-full border border-[#333] text-gray-400 font-semibold py-4 rounded-2xl hover:bg-[#1e1e1e] hover:text-white transition-all active:scale-95"

@@ -6,7 +6,6 @@ contextBridge.exposeInMainWorld("electron", {
     initMachine: async () => await ipcRenderer.invoke('vending:init'),
     saveMachineId: async (id: string, name?: string) => await ipcRenderer.invoke('vending:saveMachineId', id, name),
     encrypt: async (data: string) => await ipcRenderer.invoke('vending:encrypt', data),
-    // Razorpay QR payment
     createPaymentQR: async (amountInRupees: number) => await ipcRenderer.invoke('vending:createPaymentQR', amountInRupees),
     checkQRPayment: async (qrId: string) => await ipcRenderer.invoke('vending:checkQRPayment', qrId),
     closePaymentQR: async (qrId: string) => await ipcRenderer.invoke('vending:closePaymentQR', qrId),

@@ -24,7 +24,7 @@ function App() {
   // Razorpay payment QR state
   const [showPaymentQR, setShowPaymentQR] = useState(false);
   const [isCreatingQR, setIsCreatingQR] = useState(false);
-  const [paymentQRData, setPaymentQRData] = useState<{ qrId: string; imageUrl: string; amount: number } | null>(null);
+  const [paymentQRData, setPaymentQRData] = useState<{ qrId: string; imageUrl: string; imageDataUrl: string; shortUrl: string; amount: number } | null>(null);
 
   useEffect(() => {
     // Generate QR Code Payload asynchronously if machine is unlinked
@@ -163,7 +163,7 @@ function App() {
     }
   };
 
-  const handlePaymentSuccess = async (_paymentId: string) => {
+  const handlePaymentSuccess = async (paymentId: string) => {
     setShowPaymentQR(false);
     setPaymentQRData(null);
     setPaymentSuccess(true);
@@ -287,6 +287,8 @@ function App() {
       <PaymentQR
         qrId={paymentQRData.qrId}
         imageUrl={paymentQRData.imageUrl}
+        imageDataUrl={paymentQRData.imageDataUrl}
+        shortUrl={paymentQRData.shortUrl}
         amount={paymentQRData.amount}
         onSuccess={handlePaymentSuccess}
         onCancel={handlePaymentCancel}

@@ -1,10 +1,19 @@
 import { app, BrowserWindow, ipcMain, safeStorage } from "electron";
 import path from "path";
+import { fileURLToPath } from "url";
 import { isDev } from "./util.js";
 import { getPreloadPath } from "./pathResolver.js";
 import Store from "electron-store";
-import 'dotenv/config';
+import dotenv from "dotenv";
 import crypto from "crypto";
+
+// Resolve .env path relative to this file (works in both dev and prod)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// In dev: dist-electron/ → need to go up to project root
+// In prod (packaged): similar structure
+const envPath = path.resolve(__dirname, "..", ".env");
+dotenv.config({ path: envPath });
 
 const ALGORITHM = "aes-256-cbc";
 const IV_LENGTH = 16;
@@ -27,7 +36,7 @@ export function encrypt(text: string): string {
 const store = new Store();
 
 // Replace with production backend URL
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const getBackendUrl = () => process.env.BACKEND_URL || "http://localhost:3000";
 
 app.on("ready", async () => {
   try {
@@ -90,7 +99,7 @@ app.on("ready", async () => {
       const token = readSecurely('secret_token');
       if (!token) throw new Error("No secret token configured");
 
-      const response = await fetch(`${BACKEND_URL}/vending/init`, {
+      const response = await fetch(`${getBackendUrl()}/vending/init`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ secret_token: token })
@@ -115,7 +124,7 @@ app.on("ready", async () => {
       const machineId = store.get('machine_id');
       if (!token || !machineId) throw new Error("Machine not initialized");
 
-      const response = await fetch(`${BACKEND_URL}/vending/purchase`, {
+      const response = await fetch(`${getBackendUrl()}/vending/purchase`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ secret_token: token, machine_id: machineId, items })
@@ -129,68 +138,94 @@ app.on("ready", async () => {
       return await response.json();
     });
 
-    // 5. Razorpay helpers
-    const getRazorpayAuth = () => {
-      const keyId = process.env.RAZORPAY_KEY_ID;
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
-      if (!keyId || !keySecret) throw new Error("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET not set in environment");
-      return "Basic " + Buffer.from(`${keyId}:${keySecret}`).toString("base64");
-    };
-
-    // 5a. Create a single-use UPI QR code for the given amount
+    // 5a. Create a Razorpay UPI QR code — fetch the image in main process to avoid CSP issues
     ipcMain.handle('vending:createPaymentQR', async (_, amountInRupees: number) => {
-      const auth = getRazorpayAuth();
-      const closeBy = Math.floor(Date.now() / 1000) + 20 * 60; // 20-minute window
-      const machineName = (store.get('machine_name') as string) || "Vending Machine";
+      const token = readSecurely('secret_token');
+      const machineId = store.get('machine_id');
+      if (!token || !machineId) throw new Error("Machine not initialized");
 
-      const body = {
-        type: "upi_qr",
-        name: machineName,
-        usage: "single_use",
-        fixed_amount: true,
-        payment_amount: amountInRupees * 100, // paise
-        description: "Vending Machine Order",
-        close_by: closeBy,
-      };
-
-      const res = await fetch("https://api.razorpay.com/v1/payments/qr_codes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: auth,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error((err as any).error?.description || "Failed to create Razorpay QR code");
+      const backendBase = getBackendUrl();
+      if (!backendBase || typeof backendBase !== 'string') {
+        throw new Error(`Backend URL is not configured (got: ${backendBase}). Check BACKEND_URL in .env`);
       }
 
+      const res = await fetch(`${backendBase}/vending/payment/create-qr`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret_token: token, machine_id: machineId, amount: amountInRupees }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to create payment QR");
+      }
       const data: any = await res.json();
-      return { qrId: data.id, imageUrl: data.image_url, amount: amountInRupees };
+      const imageUrl = data.imageUrl || "";
+      let imageDataUrl = "";
+
+      // Fetch QR image in main process to avoid renderer/network/CSP image load failures.
+      if (imageUrl) {
+        try {
+          const imageRes = await fetch(imageUrl, {
+            headers: {
+              'Accept': 'image/png,image/*,*/*;q=0.8',
+              'User-Agent': 'Mozilla/5.0 (compatible; VendingMachine/1.0)',
+            },
+          });
+          if (imageRes.ok) {
+            const contentType = imageRes.headers.get("content-type") || "image/png";
+            // Only build a data URL if the response is actually an image
+            const isImage = contentType.startsWith("image/") || contentType === "application/octet-stream";
+            if (isImage) {
+              const bytes = Buffer.from(await imageRes.arrayBuffer());
+              const mimeType = contentType.startsWith("image/") ? contentType.split(";")[0].trim() : "image/png";
+              imageDataUrl = `data:${mimeType};base64,${bytes.toString("base64")}`;
+            } else {
+              console.warn("[QR] Unexpected content-type for QR image:", contentType);
+            }
+          } else {
+            console.warn("[QR] Image fetch failed with status:", imageRes.status);
+          }
+        } catch (e) {
+          console.warn("[QR] Image fetch threw:", e);
+          // Keep fallbacks (remote imageUrl / shortUrl QR) if this fetch fails.
+        }
+      }
+
+      return {
+        qrId: data.qrId,
+        imageUrl,
+        imageDataUrl,
+        shortUrl: data.shortUrl || "",
+        amount: data.amount,
+      };
     });
 
-    // 5b. Poll for payment on a QR code
+    // 5b. Poll for payment status
     ipcMain.handle('vending:checkQRPayment', async (_, qrId: string) => {
-      const auth = getRazorpayAuth();
-      const res = await fetch(
-        `https://api.razorpay.com/v1/payments/qr_codes/${qrId}/payments`,
-        { headers: { Authorization: auth } }
-      );
+      const token = readSecurely('secret_token');
+      const machineId = store.get('machine_id');
+      if (!token || !machineId) throw new Error("Machine not initialized");
+
+      const res = await fetch(`${getBackendUrl()}/vending/payment/check-qr`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret_token: token, machine_id: machineId, qr_id: qrId }),
+      });
       if (!res.ok) return { paid: false };
       const data: any = await res.json();
-      const captured = (data.items || []).find((p: any) => p.status === "captured");
-      return { paid: !!captured, paymentId: captured?.id };
+      return { paid: !!data.paid, paymentId: data.paymentId };
     });
 
-    // 5c. Close a QR code on cancel/timeout
+    // 5c. Close QR on cancel/timeout
     ipcMain.handle('vending:closePaymentQR', async (_, qrId: string) => {
-      const auth = getRazorpayAuth();
-      await fetch(`https://api.razorpay.com/v1/payments/qr_codes/${qrId}/close`, {
+      const token = readSecurely('secret_token');
+      const machineId = store.get('machine_id');
+      if (!token || !machineId) return true;
+      await fetch(`${getBackendUrl()}/vending/payment/close-qr`, {
         method: "POST",
-        headers: { Authorization: auth },
-      }).catch(() => { });
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret_token: token, machine_id: machineId, qr_id: qrId }),
+      }).catch(() => {});
       return true;
     });
 
@@ -201,7 +236,7 @@ app.on("ready", async () => {
 
       if (token && machineId) {
         try {
-          await fetch(`${BACKEND_URL}/vending/heartbeat`, {
+          await fetch(`${getBackendUrl()}/vending/heartbeat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ secret_token: token, machine_id: machineId })
