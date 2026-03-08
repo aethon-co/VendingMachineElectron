@@ -24,24 +24,36 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
         >
             {/* Top Area - Image only (Adjusted to 60% height) */}
             <div className="relative h-[216px] w-full overflow-hidden shrink-0">
-
                 <img
                     src={image}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-in-out"
+                    className={`w-full h-full object-cover transition-all duration-1000 ease-in-out ${isOut ? 'grayscale scale-105' : 'group-hover:scale-110'}`}
                     alt={name}
                 />
+
+                {/* Out of Stock Overlay */}
+                {isOut && (
+                    <div className="absolute inset-0 bg-white/40 flex items-center justify-center z-20">
+                        <div className="bg-orange-600 text-white font-black text-[10px] uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg transform rotate-[-5deg] border-2 border-white">
+                            Temporarily Unavailable
+                        </div>
+                    </div>
+                )}
+
                 {/* Floating Tags on Image - NO BLUR */}
-                <div className="absolute top-4 left-4 flex gap-2 z-10">
+                <div className="absolute top-4 left-4 flex gap-2 z-30">
                     {tag && (
                         <span className="bg-white text-blue-600 text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-xl shadow-sm border border-black/5">
                             {tag}
                         </span>
                     )}
-                    <span className={`text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-xl shadow-sm border ${isOut ? 'bg-white text-orange-600 border-orange-500/10' : 'bg-white text-gray-500 border-black/5'}`}>
-                        {isOut ? 'Sold Out' : `${quantity} in stock`}
-                    </span>
+                    {!isOut && (
+                        <span className="bg-white text-gray-500 text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-xl shadow-sm border border-black/5">
+                            {quantity} in stock
+                        </span>
+                    )}
                 </div>
             </div>
+
 
             {/* Bottom Area - Solid Content Section */}
             <div className="flex-1 bg-white h-[144px] p-5 pt-3 flex flex-col justify-between relative z-20">

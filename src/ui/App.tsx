@@ -115,13 +115,28 @@ function App() {
       {/* Main Content Area */}
       <div className='w-full flex-1 overflow-y-auto px-6 pt-2 pb-32 space-y-4'>
         {items.length === 0 ? (
-          <div className="w-full h-full flex flex-col justify-center items-center py-20 text-center gap-4">
-            <div className="w-20 h-20 bg-white/50 rounded-full flex items-center justify-center border border-black/5">
-              <span className="text-4xl opacity-40">📦</span>
+          <div className="w-full h-full flex flex-col justify-center items-center py-32 text-center">
+            <div className="relative mb-8">
+              <div className="w-32 h-32 bg-gray-50 rounded-[40px] flex items-center justify-center border border-black/5 shadow-inner">
+                <span className="text-6xl grayscale opacity-40">🛍️</span>
+              </div>
+              <div className="absolute -bottom-2 -right-2 bg-orange-600 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-xl shadow-lg border-2 border-white">
+                Empty
+              </div>
             </div>
-            <div>
-              <h3 className="text-gray-400 font-bold text-xl">Out of Stock</h3>
-              <p className="text-gray-300 text-sm">We're restocking this machine right now.</p>
+
+            <div className="max-w-[280px]">
+              <h3 className="text-gray-900 font-black text-3xl tracking-tight mb-2">
+                Machine <span className="text-orange-600">Empty.</span>
+              </h3>
+              <p className="text-gray-400 font-medium text-base leading-relaxed">
+                We're currently restocking this machine with fresh choices. Please check back in a few minutes!
+              </p>
+            </div>
+
+            <div className="mt-12 flex items-center gap-2 px-6 py-3 bg-gray-50 rounded-2xl border border-black/5">
+              <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Restocking in Progress</span>
             </div>
           </div>
         ) : (

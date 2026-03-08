@@ -10,22 +10,24 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
     const [paymentQRData, setPaymentQRData] = useState<{ qrId: string; imageUrl: string; imageDataUrl: string; shortUrl: string; amount: number } | null>(null);
 
     const handleAddToCart = (id: string, price: number) => {
-        setItems(items.map(item =>
-            item.id === id && item.quantity > 0
+        setItems(items.map(item => {
+            const itemId = item.id || item._id;
+            return itemId === id && item.quantity > 0
                 ? { ...item, quantity: item.quantity - 1 }
-                : item
-        ));
+                : item;
+        }));
         setCart(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
         setCartTotal(prev => prev + price);
     };
 
     const handleRemoveFromCart = (id: string, price: number) => {
         if (!cart[id]) return;
-        setItems(items.map(item =>
-            item.id === id
+        setItems(items.map(item => {
+            const itemId = item.id || item._id;
+            return itemId === id
                 ? { ...item, quantity: item.quantity + 1 }
-                : item
-        ));
+                : item;
+        }));
         setCart(prev => {
             const newCart = { ...prev };
             newCart[id] -= 1;
