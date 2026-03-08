@@ -89,16 +89,17 @@ function App() {
   // 4. Payment Success Screen
   if (paymentSuccess) return <SuccessScreen />;
 
+  // 5. Main Kiosk Screen
   return (
-    <div className='w-full h-full m-0 p-0 flex flex-col justify-between text-white overflow-hidden pb-3'>
-      <div className="w-full flex justify-between items-center px-4 mt-4 shrink-0">
+    <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col items-center text-white border border-[#333] shadow-2xl overflow-hidden'>
+      <div className="w-full flex justify-between items-center px-[4%] mt-6">
         <p className='font-extrabold text-[#f3f4f6] text-xl'>All Items</p>
         <p className='text-gray-500 text-sm'>Machine: {machineData?.name}</p>
       </div>
 
-      <div className='w-full flex-grow grid grid-cols-3 gap-4 overflow-y-auto px-4 mt-2 pb-4 scrollbar-hide'>
+      <div className='w-[92%] h-[90%] grid grid-cols-2 gap-4 overflow-y-auto pb-4 mt-4'>
         {items.length === 0 ? (
-          <div className="col-span-3 flex justify-center items-center h-full text-gray-500">
+          <div className="col-span-2 flex justify-center items-center h-full text-gray-500">
             No items stocked.
           </div>
         ) : (
@@ -108,14 +109,12 @@ function App() {
         )}
       </div>
 
-      <div className="shrink-0 w-full px-4 object-bottom">
-        <OrderFooter
-          total={cartTotal}
-          onClear={() => handleClearOrder(machineData?.items)}
-          onPay={handleInitiatePayment}
-          isLoading={isCreatingQR}
-        />
-      </div>
+      <OrderFooter
+        total={cartTotal}
+        onClear={() => handleClearOrder(machineData?.items)}
+        onPay={handleInitiatePayment}
+        isLoading={isCreatingQR}
+      />
     </div>
   )
 }
