@@ -13,7 +13,7 @@ interface PaymentQRProps {
 }
 
 const POLL_INTERVAL_MS = 3000;
-const EXPIRY_SECONDS = 20 * 60;
+const EXPIRY_SECONDS = 3 * 60;
 
 const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, onCancel }: PaymentQRProps) => {
   const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS);
@@ -72,9 +72,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   return (
     <div className="bg-transparent w-[600px] h-[1024px] m-0 p-0 flex flex-col justify-center items-center text-gray-900 overflow-hidden px-12 font-['Outfit']">
       <div className="flex flex-col items-center mb-6 text-center">
-        <div className="w-14 h-14 bg-white shadow-sm rounded-2xl border border-black/5 flex items-center justify-center mb-4">
-          <span className="text-2xl">📱</span>
-        </div>
         <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight">
           Scan <span className="text-blue-600">& Pay.</span>
         </h1>
