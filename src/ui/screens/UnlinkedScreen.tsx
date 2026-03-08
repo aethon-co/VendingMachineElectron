@@ -10,7 +10,7 @@ interface UnlinkedScreenProps {
 
 export default function UnlinkedScreen({ machineName, qrEncryptedPayload, refreshing, handleRefreshQR }: UnlinkedScreenProps) {
     return (
-        <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white   overflow-hidden'>
+        <div className='bg-[#121212] w-full h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white   overflow-hidden'>
             <div className="bg-white p-6 rounded-2xl mb-8">
                 {qrEncryptedPayload ? (
                     <QRCodeSVG value={qrEncryptedPayload} size={250} level="H" />

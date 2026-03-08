@@ -2,7 +2,7 @@ import { FaWifi } from 'react-icons/fa';
 
 export default function OfflineScreen() {
     return (
-        <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white   overflow-hidden'>
+        <div className='bg-[#121212] w-full h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white   overflow-hidden'>
             <div className="w-24 h-24 bg-red-500/20 text-red-500 rounded-full flex justify-center items-center mb-6 relative">
                 <FaWifi size={40} className="opacity-50" />
                 <div className="absolute inset-0 flex justify-center items-center transform -rotate-45">
