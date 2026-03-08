@@ -71,17 +71,17 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
   return (
     <div className="bg-transparent w-[600px] h-[1024px] m-0 p-0 flex flex-col justify-center items-center text-gray-900 overflow-hidden px-12 font-['Outfit']">
-      <div className="flex flex-col items-center mb-10 text-center">
-        <div className="w-16 h-16 bg-white shadow-sm rounded-2xl border border-black/5 flex items-center justify-center mb-6">
-          <span className="text-3xl">📱</span>
+      <div className="flex flex-col items-center mb-6 text-center">
+        <div className="w-14 h-14 bg-white shadow-sm rounded-2xl border border-black/5 flex items-center justify-center mb-4">
+          <span className="text-2xl">📱</span>
         </div>
-        <h1 className="text-4xl font-black tracking-tight text-gray-900 leading-tight">
+        <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight">
           Scan <span className="text-blue-600">& Pay.</span>
         </h1>
-        <p className="text-gray-400 font-medium text-lg mt-2">Use any UPI app to complete payment</p>
+        <p className="text-gray-400 font-medium text-base mt-1">Use any UPI app to complete payment</p>
       </div>
 
-      <div className="relative group mb-10">
+      <div className="relative group mb-6">
         <div className="absolute inset-[-10px] bg-blue-500/5 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
         {isExpired ? (
@@ -92,7 +92,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             <p className="text-gray-400 text-xs mt-2 font-bold uppercase tracking-widest leading-loose">Please try again</p>
           </div>
         ) : (imageDataUrl || imageUrl) && !imageFailed ? (
-          <div className="relative bg-white p-6 rounded-[40px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.02] border border-black/5">
+          <div className="relative bg-white p-2 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5">
             <img
               src={imageDataUrl || imageUrl}
               alt="UPI Payment QR Code"
@@ -104,7 +104,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             />
           </div>
         ) : (shortUrl || imageUrl) ? (
-          <div className="relative bg-white p-6 rounded-[40px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.02] border border-black/5">
+          <div className="relative bg-white p-2 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5">
             <QRCodeSVG value={shortUrl || imageUrl} size={440} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
           </div>
         ) : (
@@ -116,9 +116,9 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         )}
       </div>
 
-      <div className="mb-10 text-center py-4 px-10 bg-white shadow-sm rounded-[32px] border border-black/5">
-        <p className="text-gray-400 text-[10px] uppercase font-black tracking-[0.3em] mb-1">Total Amount</p>
-        <p className="text-4xl font-black text-gray-900 tabular-nums tracking-tight">₹{amount}</p>
+      <div className="mb-6 text-center py-3 px-8 bg-white shadow-sm rounded-[24px] border border-black/5">
+        <p className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] mb-0.5">Total Amount</p>
+        <p className="text-3xl font-black text-gray-900 tabular-nums tracking-tight">₹{amount}</p>
       </div>
 
       {!isExpired && (
@@ -140,8 +140,8 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
       )}
 
       {!isExpired && (
-        <div className="flex items-center gap-3 bg-white shadow-sm px-6 py-3 rounded-full text-gray-400 text-xs font-bold uppercase tracking-widest mb-8 border border-black/5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.3)]" />
+        <div className="flex items-center gap-2.5 bg-white shadow-sm px-5 py-2.5 rounded-full text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-6 border border-black/5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
           <span>Waiting for Payment</span>
         </div>
       )}
@@ -149,7 +149,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
       {errorMsg && <p className="text-red-500 text-xs mb-6 text-center font-bold px-4">{errorMsg}</p>}
 
       {!isExpired && (
-        <p className="text-gray-300 text-[10px] text-center mb-8 px-10 leading-relaxed font-bold uppercase tracking-widest">
+        <p className="text-gray-300 text-[9px] text-center mb-6 px-10 leading-relaxed font-bold uppercase tracking-widest">
           GPay · PhonePe · Paytm · BHIM · Any UPI
         </p>
       )}
