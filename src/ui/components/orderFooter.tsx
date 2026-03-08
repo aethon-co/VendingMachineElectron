@@ -1,4 +1,4 @@
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaArrowRight } from "react-icons/fa";
 
 interface OrderFooterProps {
     total: number;
@@ -37,7 +37,7 @@ const OrderFooter = ({ total, onClear, onPay, isLoading = false }: OrderFooterPr
                     ) : (
                         <>
                             <span>Pay Now</span>
-                            <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
+                            <FaArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                         </>
                     )}
                 </button>

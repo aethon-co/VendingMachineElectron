@@ -1,3 +1,5 @@
+import { FaArrowRight } from "react-icons/fa";
+
 interface SetupScreenProps {
     secretTokenInput: string;
     setSecretTokenInput: (val: string) => void;
@@ -37,7 +39,9 @@ export default function SetupScreen({ secretTokenInput, setSecretTokenInput, han
                         className="w-full h-[76px] bg-blue-600 text-white font-black text-xl rounded-[24px] flex items-center justify-center gap-3 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-500/20 disabled:opacity-20 disabled:shadow-none"
                     >
                         <span>Initialize Machine</span>
-                        <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm text-blue-600 font-black shadow-sm">→</span>
+                        <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
+                            <FaArrowRight size={14} />
+                        </span>
 
                     </button>
                 </div>
