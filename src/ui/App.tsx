@@ -91,25 +91,59 @@ function App() {
 
   // 5. Main Kiosk Screen
   return (
-    <div className='bg-[#121212] w-[600px] h-[1024px] border-2 border-white m-0 p-0 rounded-2xl flex flex-col items-center text-white overflow-hidden'>
-      <div className="w-full flex justify-between items-center px-[4%] mt-6">
-        <p className='font-extrabold text-[#f3f4f6] text-xl'>All Items</p>
-        <p className='text-gray-500 text-sm'>Machine: {machineData?.name}</p>
+    <div className='relative bg-transparent w-[600px] h-[1024px] m-0 p-0 flex flex-col items-center text-gray-900 overflow-hidden font-["Outfit"]'>
+      {/* Premium Header */}
+      <div className="w-full flex justify-between items-end px-8 pt-10 pb-6 z-20">
+        <div className="flex flex-col gap-1">
+          <h1 className='font-black text-4xl tracking-tight text-gray-900'>
+            Delicious <span className="text-blue-600">Choices.</span>
+          </h1>
+          <p className='text-gray-400 font-bold text-xs uppercase tracking-[0.2em]'>
+            Select your items below
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <div className="px-3 py-1 bg-white rounded-full border border-black/10 shadow-sm">
+            <p className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>
+              ID: {machineData?.name || 'VEND-01'}
+            </p>
+          </div>
+        </div>
+
       </div>
 
-      <div className='w-[92%] h-[90%] grid grid-cols-2 gap-4 overflow-y-auto pb-4 mt-4'>
+      {/* Main Content Area */}
+      <div className='w-full flex-1 overflow-y-auto px-6 pt-2 pb-32 space-y-4'>
         {items.length === 0 ? (
-          <div className="col-span-2 flex justify-center items-center h-full text-gray-500">
-            No items stocked.
+          <div className="w-full h-full flex flex-col justify-center items-center py-20 text-center gap-4">
+            <div className="w-20 h-20 bg-white/50 rounded-full flex items-center justify-center border border-black/5">
+              <span className="text-4xl opacity-40">📦</span>
+            </div>
+            <div>
+              <h3 className="text-gray-400 font-bold text-xl">Out of Stock</h3>
+              <p className="text-gray-300 text-sm">We're restocking this machine right now.</p>
+            </div>
           </div>
         ) : (
-          items.map((item) => {
-            const itemId = item._id || item.id;
-            return <ItemCard key={itemId} {...item} id={itemId} onAdd={handleAddToCart} onRemove={handleRemoveFromCart} cartQuantity={cart[itemId] || 0} />;
-          })
+          <div className="grid grid-cols-2 gap-5">
+            {items.map((item) => {
+              const itemId = item._id || item.id;
+              return (
+                <ItemCard
+                  key={itemId}
+                  {...item}
+                  id={itemId}
+                  onAdd={handleAddToCart}
+                  onRemove={handleRemoveFromCart}
+                  cartQuantity={cart[itemId] || 0}
+                />
+              );
+            })}
+          </div>
         )}
       </div>
 
+      {/* Footer Overlay */}
       <OrderFooter
         total={cartTotal}
         onClear={() => handleClearOrder(machineData?.items)}
@@ -119,5 +153,7 @@ function App() {
     </div>
   )
 }
+
+
 
 export default App

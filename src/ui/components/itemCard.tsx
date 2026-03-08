@@ -14,68 +14,87 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
     const isOut = quantity === 0;
 
     return (
-        <div className={`relative w-full h-[330px] rounded-[36px] overflow-hidden flex flex-col justify-end p-5 shadow-lg border border-[#333] transition-transform duration-300 ${isOut && !cartQuantity ? 'opacity-60 grayscale-[50%]' : 'group cursor-pointer transform hover:-translate-y-1'}`}>
-            {/* Background Image */}
-            <img src={image} className="absolute inset-0 w-full h-full object-cover z-0 group-hover:scale-110 transition-transform duration-700" alt={name} />
+        <div
+            className={`relative w-full h-[360px] rounded-[32px] overflow-hidden flex flex-col border transition-all duration-500 ease-out
+            ${isOut && !cartQuantity
+                    ? 'opacity-60 grayscale-[40%] border-black/5 bg-gray-50'
+                    : 'group cursor-pointer border-black/5 hover:border-blue-500/20 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] bg-white'}`}
+        >
+            {/* Top Area - Image only (Adjusted to 60% height) */}
+            <div className="relative h-[216px] w-full overflow-hidden shrink-0">
 
-            {/* Soft Gradient Overlay - Dark Theme Match */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/80 via-30% to-transparent to-50% z-10" />
-
-            {/* Discount Badge */}
-            {/* {discount && (
-                <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md text-white/90 text-[10px] font-bold px-3 py-1.5 rounded-full z-20">
-                    {discount}
-                </div>
-            )} */}
-
-            <div className="z-20 w-full relative">
-                {/* Title & Price */}
-                <div className="flex justify-between items-center w-full mb-3">
-                    <h3 className="text-white text-2xl font-black truncate drop-shadow-md">{name}</h3>
-                    <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full font-bold text-sm shadow-sm whitespace-nowrap ml-2 border border-white/10">
-                        ₹{price}
-                    </div>
-                </div>
-
-                {/* Condition Pills */}
-                <div className="flex gap-2 mb-6">
+                <img
+                    src={image}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-in-out"
+                    alt={name}
+                />
+                {/* Floating Tags on Image - NO BLUR */}
+                <div className="absolute top-4 left-4 flex gap-2 z-10">
                     {tag && (
-                        <span className="bg-black/20 text-white/90 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm backdrop-blur-sm border border-black/10">
+                        <span className="bg-white text-blue-600 text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-xl shadow-sm border border-black/5">
                             {tag}
                         </span>
                     )}
-                    <span className={`text-white/90 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm backdrop-blur-sm border border-black/10 ${isOut ? 'bg-red-500/80' : 'bg-black/20'}`}>
-                        {quantity} left
+                    <span className={`text-[10px] uppercase tracking-wider font-extrabold px-3 py-1.5 rounded-xl shadow-sm border ${isOut ? 'bg-white text-orange-600 border-orange-500/10' : 'bg-white text-gray-500 border-black/5'}`}>
+                        {isOut ? 'Sold Out' : `${quantity} in stock`}
                     </span>
                 </div>
+            </div>
 
-                {/* Add to Cart Button / Swiggy Controls */}
-                {cartQuantity && cartQuantity > 0 ? (
-                    <div className="w-full bg-white text-black font-extrabold text-[15px] rounded-full z-20 flex justify-between items-center shadow-xl overflow-hidden border border-white/20">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onRemove?.(id, price); }}
-                            className="px-6 py-3.5 hover:bg-gray-100 flex-1 flex justify-center items-center active:bg-gray-200 transition-colors text-xl">
-                            −
-                        </button>
-                        <span className="px-2 text-lg">{cartQuantity}</span>
+            {/* Bottom Area - Solid Content Section */}
+            <div className="flex-1 bg-white h-[144px] p-5 pt-3 flex flex-col justify-between relative z-20">
+                {/* Title & Price */}
+                <div className="flex flex-col gap-0">
+                    <h3 className="text-gray-900 text-xl font-black tracking-tight leading-tight group-hover:text-blue-600 transition-colors truncate">
+                        {name}
+                    </h3>
+                    <p className="text-gray-400 font-bold text-base">
+                        ₹{price}
+                    </p>
+                </div>
+
+                {/* Interactive Controls */}
+                <div className="mt-2">
+                    {cartQuantity && cartQuantity > 0 ? (
+                        <div className="w-full bg-blue-600 text-white flex items-center justify-between rounded-xl overflow-hidden shadow-lg h-[48px]">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onRemove?.(id, price); }}
+                                className="h-full px-4 hover:bg-white/10 active:bg-white/20 transition-colors flex items-center justify-center text-xl font-light"
+                            >
+                                −
+                            </button>
+                            <span className="font-black text-lg tabular-nums">
+                                {cartQuantity}
+                            </span>
+                            <button
+                                disabled={isOut}
+                                onClick={(e) => { e.stopPropagation(); onAdd(id, price); }}
+                                className="h-full px-4 hover:bg-white/10 active:bg-white/20 transition-colors flex items-center justify-center text-xl font-light disabled:opacity-20"
+                            >
+                                +
+                            </button>
+                        </div>
+                    ) : (
                         <button
                             disabled={isOut}
                             onClick={(e) => { e.stopPropagation(); onAdd(id, price); }}
-                            className="px-6 py-3.5 hover:bg-gray-100 flex-1 flex justify-center items-center active:bg-gray-200 transition-colors text-xl disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed">
-                            +
+                            className="w-full h-[48px] bg-blue-600 text-white border border-transparent font-black text-sm rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 hover:scale-[1.01] active:scale-[0.98] transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed group/btn overflow-hidden relative"
+                        >
+                            {isOut ? (
+                                'Notify Me'
+                            ) : (
+                                <>
+                                    <span className="relative z-10 transition-colors">Add to Cart</span>
+                                    <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-blue-600 text-[8px] transition-all relative z-10 font-black shadow-sm">→</span>
+                                </>
+                            )}
                         </button>
-                    </div>
-                ) : (
-                    <button
-                        disabled={isOut}
-                        onClick={(e) => { e.stopPropagation(); onAdd(id, price); }}
-                        className="w-full bg-white text-black font-extrabold text-[15px] py-3.5 rounded-full z-20 hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-white/20">
-                        {isOut ? 'Out of Stock' : 'Add to cart'}
-                    </button>
-                )}
+                    )}
+                </div>
             </div>
+
         </div>
-    )
-}
+    );
+};
 
 export default ItemCard
