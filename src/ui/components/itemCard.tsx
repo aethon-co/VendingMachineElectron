@@ -85,8 +85,9 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
                             ) : (
                                 <>
                                     <span className="relative z-10 transition-colors">Add to Cart</span>
-                                    <span className="w-5 h-5 bg-white rounded-full flex items-center justify-center text-blue-600 text-[8px] transition-all relative z-10 font-black shadow-sm">→</span>
+                                    <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-blue-600 text-base transition-all relative z-10 font-black shadow-sm">→</span>
                                 </>
+
                             )}
                         </button>
                     )}
