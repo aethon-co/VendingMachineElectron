@@ -103,9 +103,10 @@ function App() {
             No items stocked.
           </div>
         ) : (
-          items.map((item) => (
-            <ItemCard key={item.id} {...item} onAdd={handleAddToCart} onRemove={handleRemoveFromCart} cartQuantity={cart[item.id] || 0} />
-          ))
+          items.map((item) => {
+            const itemId = item._id || item.id;
+            return <ItemCard key={itemId} {...item} id={itemId} onAdd={handleAddToCart} onRemove={handleRemoveFromCart} cartQuantity={cart[itemId] || 0} />;
+          })
         )}
       </div>
 
