@@ -3,6 +3,13 @@ import { readSecurely, getMachineId } from "../services/storeService.js";
 import { fetchFromBackend } from "../services/apiService.js";
 import { dispenseItems } from "../services/serialService.js";
 
+const rowToLetter: Record<number, string> = {
+    1: "E",
+    2: "D",
+    3: "C",
+    4: "B"
+};
+
 export function registerMachineHandlers() {
     ipcMain.handle('vending:init', async () => {
         const token = readSecurely('secret_token');
@@ -22,16 +29,23 @@ export function registerMachineHandlers() {
             items
         });
 
-        // Backend successfully confirmed deduction. Send commands to Serial Arduino!
+  
         const dispenseArray: string[] = [];
         for (const item of items) {
+            const letter = rowToLetter[item.row];
+            if (!letter) {
+                console.error(`[MachineHandler] Unknown row: ${item.row}`);
+                continue;
+            }
             for (let i = 0; i < item.quantity; i++) {
-                dispenseArray.push(`row${item.row}`);
+                dispenseArray.push(letter);
             }
         }
-        // Tell hardware background loop to commence LED / Motor commands sequentially 
-        dispenseItems(dispenseArray);
 
+        dispenseItems(dispenseArray);
         return response;
     });
 }
+
+
+
