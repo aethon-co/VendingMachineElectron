@@ -111,10 +111,14 @@ function App() {
           </div>
           <button
             onClick={checkMachineStatus}
-            className="w-9 h-9 flex items-center justify-center bg-white rounded-full border border-black/10 shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+            disabled={isLoading}
+            className="w-9 h-9 flex items-center justify-center bg-white rounded-full border border-black/10 shadow-sm hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-50"
             title="Refresh"
           >
-            <FiRefreshCw size={16} className="text-gray-500" />
+            <FiRefreshCw
+              size={16}
+              className={`text-gray-500 ${isLoading ? 'animate-spin' : ''}`}
+            />
           </button>
         </div>
 
@@ -148,20 +152,22 @@ function App() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {items.map((item) => {
-              const itemId = item._id || item.id;
-              return (
-                <ItemCard
-                  key={itemId}
-                  {...item}
-                  id={itemId}
-                  onAdd={handleAddToCart}
-                  onRemove={handleRemoveFromCart}
-                  cartQuantity={cart[itemId] || 0}
-                />
-              );
-            })}
+          <div className="grid grid-cols-2 gap-5">
+            {[...items]
+              .sort((a, b) => (Number(a.row) || 0) - (Number(b.row) || 0))
+              .map((item) => {
+                const itemId = item._id || item.id;
+                return (
+                  <ItemCard
+                    key={itemId}
+                    {...item}
+                    id={itemId}
+                    onAdd={handleAddToCart}
+                    onRemove={handleRemoveFromCart}
+                    cartQuantity={cart[itemId] || 0}
+                  />
+                );
+              })}
           </div>
         )}
       </div>

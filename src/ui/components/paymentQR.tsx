@@ -96,7 +96,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             <img
               src={imageDataUrl || imageUrl}
               alt="UPI Payment QR Code"
-              className="w-[340px] h-[340px] object-contain"
+              className="w-[440px] h-[440px] object-contain"
               onError={() => {
                 setImageFailed(true);
                 setErrorMsg("QR image unavailable. Switched to fallback.");
@@ -105,7 +105,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
           </div>
         ) : (shortUrl || imageUrl) ? (
           <div className="relative bg-white p-6 rounded-[40px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.02] border border-black/5">
-            <QRCodeSVG value={shortUrl || imageUrl} size={340} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
+            <QRCodeSVG value={shortUrl || imageUrl} size={440} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
           </div>
         ) : (
           <div className="relative bg-white shadow-xl rounded-[40px] p-12 flex flex-col items-center border border-black/5 w-[300px] h-[300px] justify-center text-center">
