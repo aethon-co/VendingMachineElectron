@@ -63,7 +63,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   const handleCancel = async () => {
     clearInterval(pollRef.current!);
     clearInterval(timerRef.current!);
-    await window.electron.closePaymentQR(qrId).catch(() => {});
+    await window.electron.closePaymentQR(qrId).catch(() => { });
     onCancel();
   };
 
@@ -73,88 +73,87 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   const isWarning = secondsLeft <= 60;
 
   return (
-    <div className="bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white border border-[#333] shadow-2xl overflow-hidden px-10">
-      {/* Header */}
-      <div className="flex flex-col items-center mb-6">
-        <h1 className="text-2xl font-black text-[#f3f4f6]">Scan & Pay</h1>
-        <p className="text-gray-400 text-sm mt-1">Use any UPI app to complete your payment</p>
-      </div>
+    <div className="w-full h-full m-0 p-0 flex flex-row justify-center items-center text-white overflow-hidden bg-[#121212]">
+      {/* Left Column: QR Code */}
+      <div className="w-1/2 h-full flex flex-col items-center justify-center p-8 border-r border-[#333]">
+        <h1 className="text-2xl font-black text-[#f3f4f6] mb-1">Scan & Pay</h1>
+        <p className="text-gray-400 text-sm mb-6">Use any UPI app</p>
 
-      {/* QR Code */}
-      {isExpired ? (
-        <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center mb-6">
-          <FaTimesCircle size={64} className="text-red-500 mb-4" />
-          <p className="text-red-400 font-semibold text-lg text-center">QR Code Expired</p>
-          <p className="text-gray-500 text-sm text-center mt-2">Please go back and try again.</p>
-        </div>
-      ) : (imageDataUrl || imageUrl) && !imageFailed ? (
-        <div className="bg-white p-5 rounded-2xl mb-6 shadow-lg flex items-center justify-center">
-          <img
-            src={imageDataUrl || imageUrl}
-            alt="UPI Payment QR Code"
-            className="w-[230px] h-[230px] object-contain"
-            onError={() => {
-              setImageFailed(true);
-              setErrorMsg("QR image unavailable. Switched to fallback QR.");
-            }}
-          />
-        </div>
-      ) : (shortUrl || imageUrl) ? (
-        <div className="bg-white p-5 rounded-2xl mb-6 shadow-lg flex items-center justify-center">
-          <QRCodeSVG value={shortUrl || imageUrl} size={230} level="H" includeMargin />
-        </div>
-      ) : (
-        <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center mb-6">
-          <FaTimesCircle size={64} className="text-red-500 mb-4" />
-          <p className="text-red-400 font-semibold text-lg text-center">QR Unavailable</p>
-          <p className="text-gray-500 text-sm text-center mt-2">Please cancel and try again.</p>
-        </div>
-      )}
-
-      {/* Amount */}
-      <div className="mb-6 text-center">
-        <p className="text-gray-400 text-sm">Total Amount</p>
-        <p className="text-4xl font-black text-white mt-1">₹{amount}</p>
-      </div>
-
-      {/* Countdown bar */}
-      {!isExpired && (
-        <div className="w-full mb-6">
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span>QR expires in</span>
-            <span className={isWarning ? "text-red-400 font-bold" : "text-gray-400"}>{mm}:{ss}</span>
+        {isExpired ? (
+          <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center">
+            <FaTimesCircle size={48} className="text-red-500 mb-4" />
+            <p className="text-red-400 font-semibold text-lg text-center">QR Code Expired</p>
           </div>
-          <div className="w-full h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-1000 ${isWarning ? "bg-red-500" : "bg-white"}`}
-              style={{ width: `${pct}%` }}
+        ) : (imageDataUrl || imageUrl) && !imageFailed ? (
+          <div className="bg-white p-4 rounded-2xl shadow-lg flex items-center justify-center">
+            <img
+              src={imageDataUrl || imageUrl}
+              alt="UPI Payment QR Code"
+              className="w-[200px] h-[200px] object-contain"
+              onError={() => {
+                setImageFailed(true);
+                setErrorMsg("QR image unavailable. Switched to fallback QR.");
+              }}
             />
           </div>
+        ) : (shortUrl || imageUrl) ? (
+          <div className="bg-white p-4 rounded-2xl shadow-lg flex items-center justify-center">
+            <QRCodeSVG value={shortUrl || imageUrl} size={200} level="H" includeMargin />
+          </div>
+        ) : (
+          <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center">
+            <FaTimesCircle size={48} className="text-red-500 mb-4" />
+            <p className="text-red-400 font-semibold text-lg text-center">QR Unavailable</p>
+          </div>
+        )}
+      </div>
+
+      {/* Right Column: details and controls */}
+      <div className="w-1/2 h-full flex flex-col justify-center px-10">
+        <div className="mb-8">
+          <p className="text-gray-400 text-sm">Total Amount</p>
+          <p className="text-5xl font-black text-white mt-1">₹{amount}</p>
         </div>
-      )}
 
-      {/* Polling indicator */}
-      {!isExpired && (
-        <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span>Waiting for payment confirmation...</span>
-        </div>
-      )}
+        {/* Countdown bar */}
+        {!isExpired && (
+          <div className="w-full mb-8">
+            <div className="flex justify-between text-sm text-gray-500 mb-2">
+              <span>QR expires in</span>
+              <span className={isWarning ? "text-red-400 font-bold" : "text-gray-400"}>{mm}:{ss}</span>
+            </div>
+            <div className="w-full h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ${isWarning ? "bg-red-500" : "bg-white"}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        )}
 
-      {errorMsg && <p className="text-red-400 text-xs mb-4 text-center">{errorMsg}</p>}
+        {/* Polling indicator */}
+        {!isExpired && (
+          <div className="flex items-center gap-2 text-gray-400 text-sm mb-6">
+            <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+            <span>Waiting for payment...</span>
+          </div>
+        )}
 
-      {!isExpired && (
-        <p className="text-gray-600 text-xs text-center mb-6 px-6 leading-relaxed">
-          Works with GPay, PhonePe, Paytm, BHIM, and all UPI-enabled apps.
-        </p>
-      )}
+        {errorMsg && <p className="text-red-400 text-sm mb-4">{errorMsg}</p>}
 
-      <button
-        onClick={handleCancel}
-        className="w-full border border-[#333] text-gray-400 font-semibold py-4 rounded-2xl hover:bg-[#1e1e1e] hover:text-white transition-all active:scale-95"
-      >
-        Cancel
-      </button>
+        {!isExpired && (
+          <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+            Works with GPay, PhonePe, Paytm, BHIM, and all UPI-enabled apps.
+          </p>
+        )}
+
+        <button
+          onClick={handleCancel}
+          className="w-full border border-[#333] text-gray-400 font-semibold py-4 rounded-2xl hover:bg-[#1e1e1e] hover:text-white transition-all active:scale-95 text-lg"
+        >
+          Cancel Payment
+        </button>
+      </div>
     </div>
   );
 };

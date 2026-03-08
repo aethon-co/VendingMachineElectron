@@ -14,7 +14,7 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
     const isOut = quantity === 0;
 
     return (
-        <div className={`relative w-full h-[330px] rounded-[36px] overflow-hidden flex flex-col justify-end p-5 shadow-lg border border-[#333] transition-transform duration-300 ${isOut && !cartQuantity ? 'opacity-60 grayscale-[50%]' : 'group cursor-pointer transform hover:-translate-y-1'}`}>
+        <div className={`relative w-full h-[230px] rounded-[24px] overflow-hidden flex flex-col justify-end p-4 shadow-lg border border-[#333] transition-transform duration-300 ${isOut && !cartQuantity ? 'opacity-60 grayscale-[50%]' : 'group cursor-pointer transform hover:-translate-y-1'}`}>
             {/* Background Image */}
             <img src={image} className="absolute inset-0 w-full h-full object-cover z-0 group-hover:scale-110 transition-transform duration-700" alt={name} />
 
@@ -31,14 +31,14 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
             <div className="z-20 w-full relative">
                 {/* Title & Price */}
                 <div className="flex justify-between items-center w-full mb-3">
-                    <h3 className="text-white text-2xl font-black truncate drop-shadow-md">{name}</h3>
+                    <h3 className="text-white text-xl font-black truncate drop-shadow-md">{name}</h3>
                     <div className="bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full font-bold text-sm shadow-sm whitespace-nowrap ml-2 border border-white/10">
                         ₹{price}
                     </div>
                 </div>
 
                 {/* Condition Pills */}
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-2 mb-3">
                     {tag && (
                         <span className="bg-black/20 text-white/90 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm backdrop-blur-sm border border-black/10">
                             {tag}
@@ -54,14 +54,14 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
                     <div className="w-full bg-white text-black font-extrabold text-[15px] rounded-full z-20 flex justify-between items-center shadow-xl overflow-hidden border border-white/20">
                         <button
                             onClick={(e) => { e.stopPropagation(); onRemove?.(id, price); }}
-                            className="px-6 py-3.5 hover:bg-gray-100 flex-1 flex justify-center items-center active:bg-gray-200 transition-colors text-xl">
+                            className="px-4 py-2 hover:bg-gray-100 flex-1 flex justify-center items-center active:bg-gray-200 transition-colors text-lg">
                             −
                         </button>
                         <span className="px-2 text-lg">{cartQuantity}</span>
                         <button
                             disabled={isOut}
                             onClick={(e) => { e.stopPropagation(); onAdd(id, price); }}
-                            className="px-6 py-3.5 hover:bg-gray-100 flex-1 flex justify-center items-center active:bg-gray-200 transition-colors text-xl disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed">
+                            className="px-4 py-2 hover:bg-gray-100 flex-1 flex justify-center items-center active:bg-gray-200 transition-colors text-lg disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed">
                             +
                         </button>
                     </div>
@@ -69,7 +69,7 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
                     <button
                         disabled={isOut}
                         onClick={(e) => { e.stopPropagation(); onAdd(id, price); }}
-                        className="w-full bg-white text-black font-extrabold text-[15px] py-3.5 rounded-full z-20 hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-white/20">
+                        className="w-full bg-white text-black font-extrabold text-[14px] py-2 rounded-full z-20 hover:bg-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed border border-white/20">
                         {isOut ? 'Out of Stock' : 'Add to cart'}
                     </button>
                 )}
