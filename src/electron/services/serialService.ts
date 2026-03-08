@@ -2,11 +2,19 @@ import { SerialPort } from 'serialport';
 
 // Configuration
 const BAUD_RATE = 9600; // Standard Arduino baud rate
-const INTERVAL_MS = 5000;
+const INTERVAL_MS = 7000;
 
 let port: SerialPort | null = null;
 let messageQueue: string[] = [];
 let isDispensing = false;
+
+
+const rowMap: Record<string, string> = {
+    "row1": "E",
+    "row2": "D",
+    "row3": "C",
+    "row4": "B"
+};
 
 export async function initSerial() {
     console.log("[SerialService] Scanning for available serial ports...");
@@ -47,14 +55,58 @@ export async function initSerial() {
     });
 }
 
+// function processQueue() {
+//     if (isDispensing || messageQueue.length === 0) return;
+//     isDispensing = true;
+
+//     // Give Arduino a tiny buffer if needed, but since it's already open, we can start intervals
+//     const intervalId = setInterval(() => {
+//         if (messageQueue.length === 0) {
+//             console.log("[SerialService] Finished sending all requested items.");
+//             clearInterval(intervalId);
+//             isDispensing = false;
+//             return;
+//         }
+
+//         const msg = messageQueue.shift();
+//         if (msg) {
+//             console.log(`[${new Date().toLocaleTimeString()}] Sending to auto-dispenser: ${msg}`);
+
+//             // "For odd numbers, make the LED blink and even numbers to turn it off"
+//             const match = msg.match(/row(\d+)/);
+//             if (match) {
+//                 const rowNum = parseInt(match[1]);
+//                 if (rowNum % 2 !== 0) {
+//                     console.log(`[SerialService] Odd row detected - asking Arduino to BLINK LED`);
+//                     port?.write(`blink\n`);
+//                 } else {
+//                     console.log(`[SerialService] Even row detected - asking Arduino to TURN OFF LED`);
+//                     port?.write(`off\n`);
+//                 }
+//             }
+
+//             // Also send the actual row number so Arduino knows what to dispense
+//             setTimeout(() => {
+//                 port?.write(`${msg}\n`, (err) => {
+//                     if (err) {
+//                         return console.log('[SerialService] Error on write: ', err.message);
+//                     }
+//                 });
+//             }, 500); // Send the row selection half a second after the LED ping
+//         }
+//     }, INTERVAL_MS);
+// }
+
+
+// Define your mapping here
+
+
 function processQueue() {
     if (isDispensing || messageQueue.length === 0) return;
     isDispensing = true;
 
-    // Give Arduino a tiny buffer if needed, but since it's already open, we can start intervals
     const intervalId = setInterval(() => {
         if (messageQueue.length === 0) {
-            console.log("[SerialService] Finished sending all requested items.");
             clearInterval(intervalId);
             isDispensing = false;
             return;
@@ -62,29 +114,18 @@ function processQueue() {
 
         const msg = messageQueue.shift();
         if (msg) {
-            console.log(`[${new Date().toLocaleTimeString()}] Sending to auto-dispenser: ${msg}`);
+            const letterCmd = rowMap[msg] || msg;
 
-            // "For odd numbers, make the LED blink and even numbers to turn it off"
             const match = msg.match(/row(\d+)/);
             if (match) {
                 const rowNum = parseInt(match[1]);
-                if (rowNum % 2 !== 0) {
-                    console.log(`[SerialService] Odd row detected - asking Arduino to BLINK LED`);
-                    port?.write(`blink\n`);
-                } else {
-                    console.log(`[SerialService] Even row detected - asking Arduino to TURN OFF LED`);
-                    port?.write(`off\n`);
-                }
+                rowNum % 2 !== 0 ? port?.write(`blink\n`) : port?.write(`off\n`);
             }
 
-            // Also send the actual row number so Arduino knows what to dispense
             setTimeout(() => {
-                port?.write(`${msg}\n`, (err) => {
-                    if (err) {
-                        return console.log('[SerialService] Error on write: ', err.message);
-                    }
-                });
-            }, 500); // Send the row selection half a second after the LED ping
+                console.log(`[SerialService] Sending letter command: ${letterCmd}`);
+                port?.write(`${letterCmd}\n`);
+            }, 500);
         }
     }, INTERVAL_MS);
 }

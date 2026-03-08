@@ -34,7 +34,7 @@ const ItemCard = ({ id, name, price, image, tag, quantity, cartQuantity, onAdd, 
                 {isOut && (
                     <div className="absolute inset-0 bg-white/40 flex items-center justify-center z-20">
                         <div className="bg-orange-600 text-white font-black text-[10px] uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg transform rotate-[-5deg] border-2 border-white">
-                            Temporarily Unavailable
+                            Out Of Stock
                         </div>
                     </div>
                 )}
