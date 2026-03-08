@@ -156,7 +156,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
       <button
         onClick={handleCancel}
-        className="w-full max-w-[320px] text-gray-400 font-bold py-6 rounded-3xl hover:bg-gray-50 hover:text-gray-900 transition-all active:scale-95 border border-transparent hover:border-black/5"
+        className="w-full max-w-[320px] bg-red-600 text-white font-black py-4 rounded-[24px] hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-500/20 uppercase tracking-[0.2em] text-[10px]"
       >
         Cancel Order
       </button>
