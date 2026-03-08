@@ -9,9 +9,9 @@ export function setupMainWindow(): BrowserWindow {
     const mainWindow = new BrowserWindow({
         width: 600,
         height: 1024,
-        fullscreen: true,
-        kiosk: true,
-        autoHideMenuBar: true,
+        // fullscreen: true,
+        // kiosk: true,
+        // autoHideMenuBar: true,
         webPreferences: {
             preload: getPreloadPath(),
         }
@@ -41,5 +41,5 @@ export function startHeartbeatLoop() {
                 console.error("Heartbeat failed", e);
             }
         }
-    }, 30 * 60 * 1000); // 30 minutes
+    }, 60 * 60 * 1000); // 30 minutes
 }

@@ -91,7 +91,7 @@ function App() {
 
   // 5. Main Kiosk Screen
   return (
-    <div className='bg-[#121212] w-full h-[860px] m-0 p-0 rounded-2xl flex flex-col items-center text-white  overflow-hidden'>
+    <div className='bg-[#121212] w-[600px] h-[1024px] border-2 border-white m-0 p-0 rounded-2xl flex flex-col items-center text-white overflow-hidden'>
       <div className="w-full flex justify-between items-center px-[4%] mt-6">
         <p className='font-extrabold text-[#f3f4f6] text-xl'>All Items</p>
         <p className='text-gray-500 text-sm'>Machine: {machineData?.name}</p>
