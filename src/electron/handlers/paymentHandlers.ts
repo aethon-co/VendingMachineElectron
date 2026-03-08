@@ -3,7 +3,6 @@ import { readSecurely, getMachineId } from "../services/storeService.js";
 import { fetchFromBackend, getBackendUrl } from "../services/apiService.js";
 
 export function registerPaymentHandlers() {
-    // 5a. Create a Razorpay UPI QR code — fetch the image in main process to avoid CSP issues
     ipcMain.handle('vending:createPaymentQR', async (_, amountInRupees: number) => {
         const token = readSecurely('secret_token');
         const machineId = getMachineId();
@@ -23,7 +22,6 @@ export function registerPaymentHandlers() {
         const imageUrl = data.imageUrl || "";
         let imageDataUrl = "";
 
-        // Fetch QR image in main process to avoid renderer/network/CSP image load failures.
         if (imageUrl) {
             try {
                 const imageRes = await fetch(imageUrl, {
@@ -59,7 +57,6 @@ export function registerPaymentHandlers() {
         };
     });
 
-    // 5b. Poll for payment status
     ipcMain.handle('vending:checkQRPayment', async (_, qrId: string) => {
         const token = readSecurely('secret_token');
         const machineId = getMachineId();
@@ -77,7 +74,7 @@ export function registerPaymentHandlers() {
         }
     });
 
-    // 5c. Close QR on cancel/timeout
+  
     ipcMain.handle('vending:closePaymentQR', async (_, qrId: string) => {
         const token = readSecurely('secret_token');
         const machineId = getMachineId();
@@ -90,7 +87,7 @@ export function registerPaymentHandlers() {
                 qr_id: qrId
             });
         } catch (e) {
-            // Ignore closure errors
+            
         }
         return true;
     });

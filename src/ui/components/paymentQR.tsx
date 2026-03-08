@@ -23,7 +23,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Countdown timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setSecondsLeft((s) => {
@@ -38,7 +37,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
     return () => clearInterval(timerRef.current!);
   }, []);
 
-  // Payment polling
   useEffect(() => {
     pollRef.current = setInterval(async () => {
       try {
@@ -55,7 +53,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
     return () => clearInterval(pollRef.current!);
   }, [qrId, onSuccess]);
 
-  // Stop polling when expired
   useEffect(() => {
     if (isExpired) clearInterval(pollRef.current!);
   }, [isExpired]);
@@ -74,7 +71,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
   return (
     <div className="bg-transparent w-[600px] h-[1024px] m-0 p-0 flex flex-col justify-center items-center text-gray-900 overflow-hidden px-12 font-['Outfit']">
-      {/* Header */}
       <div className="flex flex-col items-center mb-10 text-center">
         <div className="w-16 h-16 bg-white shadow-sm rounded-2xl border border-black/5 flex items-center justify-center mb-6">
           <span className="text-3xl">📱</span>
@@ -85,7 +81,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         <p className="text-gray-400 font-medium text-lg mt-2">Use any UPI app to complete payment</p>
       </div>
 
-      {/* QR Code Section */}
       <div className="relative group mb-10">
         <div className="absolute inset-[-10px] bg-blue-500/5 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -101,7 +96,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             <img
               src={imageDataUrl || imageUrl}
               alt="UPI Payment QR Code"
-              className="w-[240px] h-[240px] object-contain"
+              className="w-[340px] h-[340px] object-contain"
               onError={() => {
                 setImageFailed(true);
                 setErrorMsg("QR image unavailable. Switched to fallback.");
@@ -110,7 +105,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
           </div>
         ) : (shortUrl || imageUrl) ? (
           <div className="relative bg-white p-6 rounded-[40px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.02] border border-black/5">
-            <QRCodeSVG value={shortUrl || imageUrl} size={240} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
+            <QRCodeSVG value={shortUrl || imageUrl} size={340} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
           </div>
         ) : (
           <div className="relative bg-white shadow-xl rounded-[40px] p-12 flex flex-col items-center border border-black/5 w-[300px] h-[300px] justify-center text-center">
@@ -121,13 +116,11 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         )}
       </div>
 
-      {/* Amount Display */}
       <div className="mb-10 text-center py-4 px-10 bg-white shadow-sm rounded-[32px] border border-black/5">
         <p className="text-gray-400 text-[10px] uppercase font-black tracking-[0.3em] mb-1">Total Amount</p>
         <p className="text-4xl font-black text-gray-900 tabular-nums tracking-tight">₹{amount}</p>
       </div>
 
-      {/* Expiry Progress */}
       {!isExpired && (
         <div className="w-full mb-10 max-w-[320px]">
           <div className="flex justify-between items-end mb-3">
@@ -146,7 +139,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         </div>
       )}
 
-      {/* Status Indicator */}
       {!isExpired && (
         <div className="flex items-center gap-3 bg-white shadow-sm px-6 py-3 rounded-full text-gray-400 text-xs font-bold uppercase tracking-widest mb-8 border border-black/5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.3)]" />

@@ -18,18 +18,14 @@ import { initSerial } from "./services/serialService.js";
 
 app.on("ready", async () => {
   try {
-    // Attempt connecting to the hardware Serial Bus
     await initSerial();
 
-    // Setup window and rendering hook handlers
     const mainWindow = setupMainWindow();
 
-    // 2. Register IPC Routers
     registerAuthHandlers();
     registerMachineHandlers();
     registerPaymentHandlers();
 
-    // 3. Start Background Tasks
     startHeartbeatLoop();
 
   } catch (e) {

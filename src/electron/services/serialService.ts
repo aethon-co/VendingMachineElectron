@@ -1,7 +1,6 @@
 import { SerialPort } from 'serialport';
 
-// Configuration
-const BAUD_RATE = 9600; // Standard Arduino baud rate
+const BAUD_RATE = 9600; 
 const INTERVAL_MS = 7000;
 
 let port: SerialPort | null = null;

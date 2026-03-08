@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FiRefreshCw } from 'react-icons/fi';
 import './App.css'
 import ItemCard from './components/itemCard'
 import OrderFooter from './components/orderFooter'
@@ -102,12 +103,19 @@ function App() {
             Select your items below
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-2">
           <div className="px-3 py-1 bg-white rounded-full border border-black/10 shadow-sm">
             <p className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>
               ID: {machineData?.name || 'VEND-01'}
             </p>
           </div>
+          <button
+            onClick={checkMachineStatus}
+            className="w-9 h-9 flex items-center justify-center bg-white rounded-full border border-black/10 shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+            title="Refresh"
+          >
+            <FiRefreshCw size={16} className="text-gray-500" />
+          </button>
         </div>
 
       </div>
@@ -140,7 +148,7 @@ function App() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-5">
+          <div className="flex flex-col gap-4">
             {items.map((item) => {
               const itemId = item._id || item.id;
               return (
