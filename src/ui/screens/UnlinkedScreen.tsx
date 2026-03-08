@@ -10,7 +10,7 @@ interface UnlinkedScreenProps {
 
 export default function UnlinkedScreen({ machineName, qrEncryptedPayload, refreshing, handleRefreshQR }: UnlinkedScreenProps) {
     return (
-        <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white border border-[#333] shadow-2xl overflow-hidden'>
+        <div className='bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white   overflow-hidden'>
             <div className="bg-white p-6 rounded-2xl mb-8">
                 {qrEncryptedPayload ? (
                     <QRCodeSVG value={qrEncryptedPayload} size={250} level="H" />
@@ -28,7 +28,7 @@ export default function UnlinkedScreen({ machineName, qrEncryptedPayload, refres
             <button
                 onClick={handleRefreshQR}
                 disabled={refreshing}
-                className="flex items-center gap-3 bg-[#1e1e1e] border border-[#333] px-8 py-3 rounded-full hover:bg-[#2a2a2a] transition-all disabled:opacity-50"
+                className="flex items-center gap-3 bg-[#1e1e1e]  px-8 py-3 rounded-full hover:bg-[#2a2a2a] transition-all disabled:opacity-50"
             >
                 <FaSync className={refreshing ? "animate-spin" : ""} />
                 <span>I've scanned the code</span>

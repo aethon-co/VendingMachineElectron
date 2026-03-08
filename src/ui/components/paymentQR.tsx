@@ -73,7 +73,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   const isWarning = secondsLeft <= 60;
 
   return (
-    <div className="bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white border border-[#333] shadow-2xl overflow-hidden px-10">
+    <div className="bg-[#121212] w-[600px] h-[860px] m-0 p-0 rounded-2xl flex flex-col justify-center items-center text-white   overflow-hidden px-10">
       {/* Header */}
       <div className="flex flex-col items-center mb-6">
         <h1 className="text-2xl font-black text-[#f3f4f6]">Scan & Pay</h1>
@@ -82,7 +82,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
       {/* QR Code */}
       {isExpired ? (
-        <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center mb-6">
+        <div className="bg-[#1e1e1e]  rounded-2xl p-10 flex flex-col items-center mb-6">
           <FaTimesCircle size={64} className="text-red-500 mb-4" />
           <p className="text-red-400 font-semibold text-lg text-center">QR Code Expired</p>
           <p className="text-gray-500 text-sm text-center mt-2">Please go back and try again.</p>
@@ -104,7 +104,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
           <QRCodeSVG value={shortUrl || imageUrl} size={230} level="H" includeMargin />
         </div>
       ) : (
-        <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-10 flex flex-col items-center mb-6">
+        <div className="bg-[#1e1e1e]  rounded-2xl p-10 flex flex-col items-center mb-6">
           <FaTimesCircle size={64} className="text-red-500 mb-4" />
           <p className="text-red-400 font-semibold text-lg text-center">QR Unavailable</p>
           <p className="text-gray-500 text-sm text-center mt-2">Please cancel and try again.</p>
@@ -151,7 +151,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
       <button
         onClick={handleCancel}
-        className="w-full border border-[#333] text-gray-400 font-semibold py-4 rounded-2xl hover:bg-[#1e1e1e] hover:text-white transition-all active:scale-95"
+        className="w-full  text-gray-400 font-semibold py-4 rounded-2xl hover:bg-[#1e1e1e] hover:text-white transition-all active:scale-95"
       >
         Cancel
       </button>

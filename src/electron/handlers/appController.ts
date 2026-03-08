@@ -7,8 +7,11 @@ import { fetchFromBackend } from "../services/apiService.js";
 
 export function setupMainWindow(): BrowserWindow {
     const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 1280,
+        width: 600,
+        height: 1024,
+        fullscreen: true,
+        kiosk: true,
+        autoHideMenuBar: true,
         webPreferences: {
             preload: getPreloadPath(),
         }
