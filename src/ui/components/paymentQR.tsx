@@ -54,8 +54,15 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   }, [qrId, onSuccess]);
 
   useEffect(() => {
-    if (isExpired) clearInterval(pollRef.current!);
-  }, [isExpired]);
+    if (isExpired) {
+      clearInterval(pollRef.current!);
+      // Auto-redirect home after 10 seconds of showing expiry message
+      const expiryTimeout = setTimeout(() => {
+        onCancel();
+      }, 10000);
+      return () => clearTimeout(expiryTimeout);
+    }
+  }, [isExpired, onCancel]);
 
   const handleCancel = async () => {
     clearInterval(pollRef.current!);

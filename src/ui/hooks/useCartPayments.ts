@@ -62,7 +62,14 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         setPaymentQRData(null);
         setPaymentSuccess(true);
 
-        // Deduct stock in backend
+        // 1. Start the UI reset timer immediately (Parallel to dispensing)
+        setTimeout(() => {
+            setPaymentSuccess(false);
+            setCart({});
+            setCartTotal(0);
+        }, 4000);
+
+        // 2. Trigger physical dispensing in the background
         try {
             const purchaseItems = Object.keys(cart)
                 .map(itemId => {
@@ -84,12 +91,6 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         } catch (e) {
             console.error("Failed to deduct stock physically in backend", e);
         }
-
-        setTimeout(() => {
-            setPaymentSuccess(false);
-            setCart({});
-            setCartTotal(0); // Also clear cart total
-        }, 4000);
     };
 
     const handlePaymentCancel = () => {
