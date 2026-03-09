@@ -62,14 +62,7 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         setPaymentQRData(null);
         setPaymentSuccess(true);
 
-        // 1. Start the UI reset timer immediately (Parallel to dispensing)
-        setTimeout(() => {
-            setPaymentSuccess(false);
-            setCart({});
-            setCartTotal(0);
-        }, 4000);
-
-        // 2. Trigger physical dispensing in the background
+        // 1. Trigger physical dispensing and wait for it to finish
         try {
             const purchaseItems = Object.keys(cart)
                 .map(itemId => {
@@ -83,14 +76,22 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
                 .filter((item): item is { row: number; quantity: number } => item !== null);
 
             if (purchaseItems.length > 0) {
+                // This now waits until ALL items are dispensed (7s each)
                 const res = await window.electron.purchase(purchaseItems);
                 if (res && res.items) {
-                    setItems(res.items); // immediately update local UI stock
+                    setItems(res.items);
                 }
             }
         } catch (e) {
             console.error("Failed to deduct stock physically in backend", e);
         }
+
+        // 2. Start the final 4-second "Thank You" timer ONLY after dispensing is done
+        setTimeout(() => {
+            setPaymentSuccess(false);
+            setCart({});
+            setCartTotal(0);
+        }, 4000);
     };
 
     const handlePaymentCancel = () => {

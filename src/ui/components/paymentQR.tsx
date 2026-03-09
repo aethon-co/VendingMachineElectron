@@ -12,7 +12,7 @@ interface PaymentQRProps {
   onCancel: () => void;
 }
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 1000;
 const EXPIRY_SECONDS = 3 * 60;
 
 const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, onCancel }: PaymentQRProps) => {

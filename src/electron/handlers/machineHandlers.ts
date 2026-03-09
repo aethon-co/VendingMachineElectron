@@ -29,7 +29,7 @@ export function registerMachineHandlers() {
             items
         });
 
-  
+
         const dispenseArray: string[] = [];
         for (const item of items) {
             const letter = rowToLetter[item.row];
@@ -42,7 +42,7 @@ export function registerMachineHandlers() {
             }
         }
 
-        dispenseItems(dispenseArray);
+        await dispenseItems(dispenseArray);
         return response;
     });
 }
