@@ -40,16 +40,14 @@ function processQueue() {
     }, INTERVAL_MS);
 }
 
-/**
- * Initializes the serial port using the SERIAL_PORT environment variable.
- */
+
 export async function initSerial(): Promise<void> {
-    const portPath = process.env.SERIAL_PORT || '/dev/ttyUSB0'; // Default fallback
+    const portPath = process.env.SERIAL_PORT;
     console.log(`[SerialService] Attempting to open serial port: ${portPath}`);
 
     return new Promise((resolve) => {
         port = new SerialPort({
-            path: portPath,
+            path: portPath || '/dev/ttyACM0',
             baudRate: BAUD_RATE,
             autoOpen: true
         });
@@ -61,17 +59,12 @@ export async function initSerial(): Promise<void> {
 
         port.on('error', (err) => {
             console.error(`[SerialService] Error: ${err.message}`);
-            // Resolve anyway to allow the app to start even if the hardware isn't connected
             resolve();
         });
     });
 }
 
-/**
- * Accepts an array of letter commands (e.g. ["E", "E", "C"]) and queues
- * them to be sent to the Arduino sequentially. Returns a promise that
- * resolves when all items are dispensed.
- */
+
 export function dispenseItems(items: string[]): Promise<void> {
     return new Promise((resolve) => {
         if (!port || !port.isOpen) {

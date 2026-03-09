@@ -85,13 +85,16 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         } catch (e) {
             console.error("Failed to deduct stock physically in backend", e);
         }
+        setPaymentSuccess(false);
+        setCart({});
+        setCartTotal(0);
 
         // 2. Start the final 4-second "Thank You" timer ONLY after dispensing is done
-        setTimeout(() => {
-            setPaymentSuccess(false);
-            setCart({});
-            setCartTotal(0);
-        }, 4000);
+        // setTimeout(() => {
+        //     setPaymentSuccess(false);
+        //     setCart({});
+        //     setCartTotal(0);
+        // }, 4000);
     };
 
     const handlePaymentCancel = () => {
