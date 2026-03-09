@@ -12,7 +12,7 @@ interface PaymentQRProps {
   onCancel: () => void;
 }
 
-const POLL_INTERVAL_MS = 1000;
+const POLL_INTERVAL_MS = 2000;
 const EXPIRY_SECONDS = 3 * 60;
 
 const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, onCancel }: PaymentQRProps) => {
@@ -38,20 +38,36 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   }, []);
 
   useEffect(() => {
-    pollRef.current = setInterval(async () => {
+    let active = true;
+
+    const poll = async () => {
+      if (!active || isExpired) return;
+
       try {
         const result = await window.electron.checkQRPayment(qrId);
-        if (result.paid) {
-          clearInterval(pollRef.current!);
+        if (result.paid && active) {
           clearInterval(timerRef.current!);
           onSuccess(result.paymentId || "");
+          return; // Stop polling on success
         }
-      } catch {
+      } catch (err) {
+        console.error("[PaymentQR] Polling error:", err);
         setErrorMsg("Network error while checking payment.");
       }
-    }, POLL_INTERVAL_MS);
-    return () => clearInterval(pollRef.current!);
-  }, [qrId, onSuccess]);
+
+      // Schedule next poll only after current one is done
+      if (active && !isExpired) {
+        pollRef.current = setTimeout(poll, POLL_INTERVAL_MS);
+      }
+    };
+
+    poll();
+
+    return () => {
+      active = false;
+      if (pollRef.current) clearTimeout(pollRef.current);
+    };
+  }, [qrId, onSuccess, isExpired]);
 
   useEffect(() => {
     if (isExpired) {

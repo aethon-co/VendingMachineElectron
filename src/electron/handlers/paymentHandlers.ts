@@ -69,12 +69,13 @@ export function registerPaymentHandlers() {
                 qr_id: qrId
             });
             return { paid: !!data.paid, paymentId: data.paymentId };
-        } catch (e) {
+        } catch (e: any) {
+            console.error(`[PaymentHandler] Failed to check status for QR ${qrId}:`, e.message);
             return { paid: false };
         }
     });
 
-  
+
     ipcMain.handle('vending:closePaymentQR', async (_, qrId: string) => {
         const token = readSecurely('secret_token');
         const machineId = getMachineId();
@@ -87,7 +88,7 @@ export function registerPaymentHandlers() {
                 qr_id: qrId
             });
         } catch (e) {
-            
+
         }
         return true;
     });

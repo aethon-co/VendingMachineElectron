@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useCartPayments(items: any[], setItems: (items: any[]) => void) {
     const [cartTotal, setCartTotal] = useState(0);
@@ -9,7 +9,9 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
     const [isCreatingQR, setIsCreatingQR] = useState(false);
     const [paymentQRData, setPaymentQRData] = useState<{ qrId: string; imageUrl: string; imageDataUrl: string; shortUrl: string; amount: number } | null>(null);
 
-    const handleAddToCart = (id: string, price: number) => {
+    const isProcessing = useRef(false);
+
+    const handleAddToCart = useCallback((id: string, price: number) => {
         setItems(items.map(item => {
             const itemId = item.id || item._id;
             return itemId === id && item.quantity > 0
@@ -18,9 +20,9 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         }));
         setCart(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
         setCartTotal(prev => prev + price);
-    };
+    }, [items, setItems, setCart, setCartTotal]);
 
-    const handleRemoveFromCart = (id: string, price: number) => {
+    const handleRemoveFromCart = useCallback((id: string, price: number) => {
         if (!cart[id]) return;
         setItems(items.map(item => {
             const itemId = item.id || item._id;
@@ -35,15 +37,15 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
             return newCart;
         });
         setCartTotal(prev => prev - price);
-    };
+    }, [cart, items, setItems, setCart, setCartTotal]);
 
-    const handleClearOrder = (machineDataItems: any[]) => {
+    const handleClearOrder = useCallback((machineDataItems: any[]) => {
         setItems(machineDataItems || []);
         setCartTotal(0);
         setCart({});
-    };
+    }, [setItems, setCartTotal, setCart]);
 
-    const handleInitiatePayment = async () => {
+    const handleInitiatePayment = useCallback(async () => {
         if (cartTotal === 0) return;
         try {
             setIsCreatingQR(true);
@@ -55,9 +57,12 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         } finally {
             setIsCreatingQR(false);
         }
-    };
+    }, [cartTotal, setIsCreatingQR, setPaymentQRData, setShowPaymentQR]);
 
-    const handlePaymentSuccess = async () => {
+    const handlePaymentSuccess = useCallback(async () => {
+        if (isProcessing.current) return;
+        isProcessing.current = true;
+
         setShowPaymentQR(false);
         setPaymentQRData(null);
         setPaymentSuccess(true);
@@ -88,19 +93,13 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         setPaymentSuccess(false);
         setCart({});
         setCartTotal(0);
+        isProcessing.current = false;
+    }, [cart, items, setItems, setCart, setCartTotal]);
 
-        // 2. Start the final 4-second "Thank You" timer ONLY after dispensing is done
-        // setTimeout(() => {
-        //     setPaymentSuccess(false);
-        //     setCart({});
-        //     setCartTotal(0);
-        // }, 4000);
-    };
-
-    const handlePaymentCancel = () => {
+    const handlePaymentCancel = useCallback(() => {
         setShowPaymentQR(false);
         setPaymentQRData(null);
-    };
+    }, [setShowPaymentQR, setPaymentQRData]);
 
     return {
         cartTotal,

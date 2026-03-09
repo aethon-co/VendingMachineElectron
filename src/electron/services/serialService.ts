@@ -4,15 +4,14 @@ const BAUD_RATE = 9600;
 const INTERVAL_MS = 7000;
 
 let port: SerialPort | null = null;
-let currentResolve: (() => void) | null = null;
+const resolvers: (() => void)[] = [];
 let isDispensing = false;
 const messageQueue: string[] = [];
 
 function processQueue() {
     if (isDispensing || messageQueue.length === 0) {
-        if (messageQueue.length === 0 && currentResolve) {
-            currentResolve();
-            currentResolve = null;
+        if (messageQueue.length === 0) {
+            while (resolvers.length > 0) resolvers.shift()?.();
         }
         return;
     }
@@ -23,10 +22,7 @@ function processQueue() {
             console.log("[SerialService] Finished sending all items.");
             clearInterval(intervalId);
             isDispensing = false;
-            if (currentResolve) {
-                currentResolve();
-                currentResolve = null;
-            }
+            while (resolvers.length > 0) resolvers.shift()?.();
             return;
         }
 
@@ -75,7 +71,7 @@ export function dispenseItems(items: string[]): Promise<void> {
 
         console.log(`[SerialService] Queueing commands: ${JSON.stringify(items)}`);
         messageQueue.push(...items);
-        currentResolve = resolve;
+        resolvers.push(resolve);
         processQueue();
     });
 }
