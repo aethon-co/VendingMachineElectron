@@ -63,12 +63,23 @@ export function registerPaymentHandlers() {
         const machineId = getMachineId();
         if (!token || !machineId) throw new Error("Machine not initialized");
 
-        const data = await fetchFromBackend('/vending/payment/create-qr-v2', {
-            secret_token: token,
-            machine_id: machineId,
-            amount,
-            items
-        });
+        let data: any;
+        try {
+            data = await fetchFromBackend('/vending/payment/create-qr-v2', {
+                secret_token: token,
+                machine_id: machineId,
+                amount,
+                items
+            });
+        } catch (e: any) {
+            // Fallback when deployed backend does not yet expose V2 route.
+            console.warn("[Payment-V2] create-qr-v2 failed, falling back to create-qr:", e?.message || e);
+            data = await fetchFromBackend('/vending/payment/create-qr', {
+                secret_token: token,
+                machine_id: machineId,
+                amount
+            });
+        }
 
         // Re-use logic for image data URL extraction for UI reliability
         let imageDataUrl = "";

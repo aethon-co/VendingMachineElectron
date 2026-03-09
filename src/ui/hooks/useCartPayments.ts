@@ -106,11 +106,14 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         } catch (e) {
             console.error("Failed to deduct stock physically in backend", e);
         }
-        setPaymentSuccess(false);
-        setCart({});
-        setCartTotal(0);
-        isProcessing.current = false;
-    }, [cart, items, setItems, setCart, setCartTotal]);
+        // Keep success screen visible briefly before resetting state.
+        setTimeout(() => {
+            setPaymentSuccess(false);
+            setCart({});
+            setCartTotal(0);
+            isProcessing.current = false;
+        }, 4000);
+    }, [cart, items, setItems, setCart, setCartTotal, setPaymentSuccess]);
 
     const handlePaymentCancel = useCallback(() => {
         setShowPaymentQR(false);

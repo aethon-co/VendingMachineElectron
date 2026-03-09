@@ -12,8 +12,8 @@ interface PaymentQRProps {
   onCancel: () => void;
 }
 
-const POLL_INTERVAL_MS = 2000;
-const EXPIRY_SECONDS = 3 * 60;
+const POLL_INTERVAL_MS = 3000;
+const EXPIRY_SECONDS = 20 * 60;
 
 const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, onCancel }: PaymentQRProps) => {
   const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS);
@@ -23,6 +23,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Countdown timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setSecondsLeft((s) => {
@@ -37,48 +38,27 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
     return () => clearInterval(timerRef.current!);
   }, []);
 
+  // Payment polling
   useEffect(() => {
-    let active = true;
-
-    const poll = async () => {
-      if (!active || isExpired) return;
-
+    pollRef.current = setInterval(async () => {
       try {
-        const result = await window.electron.checkTransactionStatus(qrId);
-        if (result.paid && active) {
+        const result = await window.electron.checkQRPayment(qrId);
+        if (result.paid) {
+          clearInterval(pollRef.current!);
           clearInterval(timerRef.current!);
           onSuccess(result.paymentId || "");
-          return; // Stop polling on success
         }
-      } catch (err) {
-        console.error("[PaymentQR] Polling error:", err);
+      } catch {
         setErrorMsg("Network error while checking payment.");
       }
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(pollRef.current!);
+  }, [qrId, onSuccess]);
 
-      // Schedule next poll only after current one is done
-      if (active && !isExpired) {
-        pollRef.current = setTimeout(poll, POLL_INTERVAL_MS);
-      }
-    };
-
-    poll();
-
-    return () => {
-      active = false;
-      if (pollRef.current) clearTimeout(pollRef.current);
-    };
-  }, [qrId, onSuccess, isExpired]);
-
+  // Stop polling when expired
   useEffect(() => {
-    if (isExpired) {
-      clearInterval(pollRef.current!);
-      // Auto-redirect home after 10 seconds of showing expiry message
-      const expiryTimeout = setTimeout(() => {
-        onCancel();
-      }, 10000);
-      return () => clearTimeout(expiryTimeout);
-    }
-  }, [isExpired, onCancel]);
+    if (isExpired) clearInterval(pollRef.current!);
+  }, [isExpired]);
 
   const handleCancel = async () => {
     clearInterval(pollRef.current!);
@@ -94,14 +74,19 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
   return (
     <div className="bg-transparent w-[600px] h-[1024px] m-0 p-0 flex flex-col justify-center items-center text-gray-900 overflow-hidden px-12 font-['Outfit']">
-      <div className="flex flex-col items-center mb-6 text-center">
-        <h1 className="text-3xl font-black tracking-tight text-gray-900 leading-tight">
+      {/* Header */}
+      <div className="flex flex-col items-center mb-10 text-center">
+        <div className="w-16 h-16 bg-white shadow-sm rounded-2xl border border-black/5 flex items-center justify-center mb-6">
+          <span className="text-3xl">📱</span>
+        </div>
+        <h1 className="text-4xl font-black tracking-tight text-gray-900 leading-tight">
           Scan <span className="text-blue-600">& Pay.</span>
         </h1>
-        <p className="text-gray-400 font-medium text-base mt-1">Use any UPI app to complete payment</p>
+        <p className="text-gray-400 font-medium text-lg mt-2">Use any UPI app to complete payment</p>
       </div>
 
-      <div className="relative group mb-6">
+      {/* QR Code Section */}
+      <div className="relative group mb-10">
         <div className="absolute inset-[-10px] bg-blue-500/5 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
         {isExpired ? (
@@ -112,11 +97,11 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             <p className="text-gray-400 text-xs mt-2 font-bold uppercase tracking-widest leading-loose">Please try again</p>
           </div>
         ) : (imageDataUrl || imageUrl) && !imageFailed ? (
-          <div className="relative bg-white p-0 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5 w-[380px] h-[380px] flex items-center justify-center">
+          <div className="relative bg-white p-6 rounded-[40px] shadow-2xl transition-transform group-hover:scale-[1.02] border border-black/5 w-[420px] h-[420px] flex items-center justify-center overflow-hidden">
             <img
               src={imageDataUrl || imageUrl}
               alt="UPI Payment QR Code"
-              className="w-full h-full object-cover transform-gpu"
+              className="w-full h-full object-contain"
               onError={() => {
                 setImageFailed(true);
                 setErrorMsg("QR image unavailable. Switched to fallback.");
@@ -124,10 +109,8 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             />
           </div>
         ) : (shortUrl || imageUrl) ? (
-          <div className="relative bg-white p-0 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5 w-[380px] h-[380px] flex items-center justify-center">
-            <div className="scale-[1.4] transform-gpu">
-              <QRCodeSVG value={shortUrl || imageUrl} size={380} level="H" bgColor="#FFFFFF" fgColor="#000000" />
-            </div>
+          <div className="relative bg-white p-6 rounded-[40px] shadow-2xl overflow-hidden transition-transform border border-black/5 w-[420px] h-[420px] flex items-center justify-center">
+            <QRCodeSVG value={shortUrl || imageUrl} size={240} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
           </div>
         ) : (
           <div className="relative bg-white shadow-xl rounded-[40px] p-12 flex flex-col items-center border border-black/5 w-[300px] h-[300px] justify-center text-center">
@@ -138,11 +121,13 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         )}
       </div>
 
-      <div className="mb-6 text-center py-3 px-8 bg-white shadow-sm rounded-[24px] border border-black/5">
-        <p className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] mb-0.5">Total Amount</p>
-        <p className="text-3xl font-black text-gray-900 tabular-nums tracking-tight">₹{amount}</p>
+      {/* Amount Display */}
+      <div className="mb-10 text-center py-4 px-10 bg-white shadow-sm rounded-[32px] border border-black/5">
+        <p className="text-gray-400 text-[10px] uppercase font-black tracking-[0.3em] mb-1">Total Amount</p>
+        <p className="text-4xl font-black text-gray-900 tabular-nums tracking-tight">₹{amount}</p>
       </div>
 
+      {/* Expiry Progress */}
       {!isExpired && (
         <div className="w-full mb-10 max-w-[320px]">
           <div className="flex justify-between items-end mb-3">
@@ -161,9 +146,10 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         </div>
       )}
 
+      {/* Status Indicator */}
       {!isExpired && (
-        <div className="flex items-center gap-2.5 bg-white shadow-sm px-5 py-2.5 rounded-full text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-6 border border-black/5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+        <div className="flex items-center gap-3 bg-white shadow-sm px-6 py-3 rounded-full text-gray-400 text-xs font-bold uppercase tracking-widest mb-8 border border-black/5">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.3)]" />
           <span>Waiting for Payment</span>
         </div>
       )}
@@ -171,14 +157,14 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
       {errorMsg && <p className="text-red-500 text-xs mb-6 text-center font-bold px-4">{errorMsg}</p>}
 
       {!isExpired && (
-        <p className="text-gray-300 text-[9px] text-center mb-6 px-10 leading-relaxed font-bold uppercase tracking-widest">
+        <p className="text-gray-300 text-[10px] text-center mb-8 px-10 leading-relaxed font-bold uppercase tracking-widest">
           GPay · PhonePe · Paytm · BHIM · Any UPI
         </p>
       )}
 
       <button
         onClick={handleCancel}
-        className="w-full max-w-[320px] bg-red-600 text-white font-black py-4 rounded-[24px] hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-500/20 uppercase tracking-[0.2em] text-[10px]"
+        className="w-full max-w-[320px] text-gray-400 font-bold py-6 rounded-3xl hover:bg-gray-50 hover:text-gray-900 transition-all active:scale-95 border border-transparent hover:border-black/5"
       >
         Cancel Order
       </button>
@@ -188,4 +174,3 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
 
 export default PaymentQR;
-

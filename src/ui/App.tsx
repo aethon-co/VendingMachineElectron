@@ -97,29 +97,35 @@ function App() {
       <div className="w-full flex justify-between items-end px-8 pt-10 pb-6 z-20">
         <div className="flex flex-col gap-1">
           <h1 className='font-black text-4xl tracking-tight text-gray-900'>
-            Vending <span className="text-blue-600">Machine</span>
+            Manoj's <span className="text-blue-600">Vending Machine</span>
           </h1>
           <p className='text-gray-400 font-bold text-xs uppercase tracking-[0.2em]'>
             Select your items below
           </p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="px-3 py-1 bg-white rounded-full border border-black/10 shadow-sm">
-            <p className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>
-              ID: {machineData?.name || 'VEND-01'}
-            </p>
-          </div>
+        <div className="flex flex-row items-center gap-3">
           <button
-            onClick={checkMachineStatus}
-            disabled={isLoading}
-            className="w-9 h-9 flex items-center justify-center bg-white rounded-full border border-black/10 shadow-sm hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-50"
+            onClick={handleRefreshQR}
+            disabled={refreshing}
+            className="w-12 h-12 flex items-center justify-center bg-white rounded-[20px] border border-black/5 shadow-sm hover:bg-gray-50 hover:shadow-md active:scale-95 transition-all disabled:opacity-50 group"
             title="Refresh"
           >
-            <FiRefreshCw
-              size={16}
-              className={`text-gray-500 ${isLoading ? 'animate-spin' : ''}`}
+            <FiRefreshCw 
+              size={20} 
+              className={`text-blue-600 transition-transform duration-700 ${refreshing ? 'animate-spin' : 'group-hover:rotate-180'}`} 
             />
           </button>
+          <div className="flex flex-col items-end gap-1">
+            <div className="px-3 py-1 bg-white rounded-full border border-black/10 shadow-sm">
+              <p className='text-[10px] font-bold text-gray-500 uppercase tracking-widest'>
+                ID: {machineData?.name || 'VEND-01'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.2">
+               <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+               <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Online</span>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -153,21 +159,20 @@ function App() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-5">
-            {[...items]
-              .sort((a, b) => (Number(a.row) || 0) - (Number(b.row) || 0))
-              .map((item) => {
-                const itemId = item._id || item.id;
-                return (
+            {items.map((item) => {
+              const itemId = item._id || item.id;
+              return (
                   <ItemCard
                     key={itemId}
                     {...item}
                     id={itemId}
+                    row={item.row}
                     onAdd={handleAddToCart}
                     onRemove={handleRemoveFromCart}
                     cartQuantity={cart[itemId] || 0}
                   />
-                );
-              })}
+              );
+            })}
           </div>
         )}
       </div>

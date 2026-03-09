@@ -28,7 +28,9 @@ export function useMachineData(setItems: (items: any[]) => void) {
         try {
             const data = await window.electron.initMachine();
             setMachineData(data.machine || data);
-            setItems(data.machine?.items || data.items || []);
+            const rawItems: any[] = data.machine?.items || data.items || [];
+            // Sort by row ascending (treat 0/undefined as last)
+            setItems([...rawItems].sort((a: any, b: any) => (a.row || 9999) - (b.row || 9999)));
             setNeedsSetup(false);
 
             // Save ID (and name) for heartbeat & QR labelling
