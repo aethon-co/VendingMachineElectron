@@ -12,6 +12,9 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
     const isProcessing = useRef(false);
 
     const handleAddToCart = useCallback((id: string, price: number) => {
+        const unitPrice = Number(price);
+        if (!Number.isFinite(unitPrice) || unitPrice <= 0) return;
+
         setItems(items.map(item => {
             const itemId = item.id || item._id;
             return itemId === id && item.quantity > 0
@@ -19,11 +22,14 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
                 : item;
         }));
         setCart(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-        setCartTotal(prev => prev + price);
+        setCartTotal(prev => Number(prev) + unitPrice);
     }, [items, setItems, setCart, setCartTotal]);
 
     const handleRemoveFromCart = useCallback((id: string, price: number) => {
         if (!cart[id]) return;
+        const unitPrice = Number(price);
+        if (!Number.isFinite(unitPrice) || unitPrice <= 0) return;
+
         setItems(items.map(item => {
             const itemId = item.id || item._id;
             return itemId === id
@@ -36,7 +42,7 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
             if (newCart[id] === 0) delete newCart[id];
             return newCart;
         });
-        setCartTotal(prev => prev - price);
+        setCartTotal(prev => Number(prev) - unitPrice);
     }, [cart, items, setItems, setCart, setCartTotal]);
 
     const handleClearOrder = useCallback((machineDataItems: any[]) => {
@@ -46,7 +52,11 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
     }, [setItems, setCartTotal, setCart]);
 
     const handleInitiatePayment = useCallback(async () => {
-        if (cartTotal === 0) return;
+        const payableAmount = Number(cartTotal);
+        if (!Number.isFinite(payableAmount) || payableAmount <= 0) {
+            alert("Invalid cart total. Please clear order and try again.");
+            return;
+        }
         try {
             setIsCreatingQR(true);
 
@@ -59,13 +69,13 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
                         row: Number(item.row),
                         quantity: Number(cart[itemId]),
                         name: item.name,
-                        price: item.price
+                        price: Number(item.price)
                     };
                 })
                 .filter((item): item is { row: number, quantity: number, name: string, price: number } => item !== null);
 
             // Use V2 endpoint
-            const qrData = await window.electron.createPaymentQRV2(cartTotal, purchaseItems);
+            const qrData = await window.electron.createPaymentQRV2(payableAmount, purchaseItems);
             setPaymentQRData(qrData);
             setShowPaymentQR(true);
         } catch (e: any) {

@@ -73,12 +73,18 @@ export function registerPaymentHandlers() {
             });
         } catch (e: any) {
             // Fallback when deployed backend does not yet expose V2 route.
-            console.warn("[Payment-V2] create-qr-v2 failed, falling back to create-qr:", e?.message || e);
-            data = await fetchFromBackend('/vending/payment/create-qr', {
-                secret_token: token,
-                machine_id: machineId,
-                amount
-            });
+            const v2Error = e?.message || String(e);
+            console.warn("[Payment-V2] create-qr-v2 failed, falling back to create-qr:", v2Error);
+            try {
+                data = await fetchFromBackend('/vending/payment/create-qr', {
+                    secret_token: token,
+                    machine_id: machineId,
+                    amount
+                });
+            } catch (fallbackErr: any) {
+                const fallbackError = fallbackErr?.message || String(fallbackErr);
+                throw new Error(`V2 create QR failed: ${v2Error} | Fallback create QR failed: ${fallbackError}`);
+            }
         }
 
         // Re-use logic for image data URL extraction for UI reliability
