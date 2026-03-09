@@ -97,7 +97,7 @@ function App() {
       <div className="w-full flex justify-between items-end px-8 pt-10 pb-6 z-20">
         <div className="flex flex-col gap-1">
           <h1 className='font-black text-4xl tracking-tight text-gray-900'>
-            Manoj's <span className="text-blue-600">Vending Machine</span>
+            Vending <span className="text-blue-600">Machine</span>
           </h1>
           <p className='text-gray-400 font-bold text-xs uppercase tracking-[0.2em]'>
             Select your items below
