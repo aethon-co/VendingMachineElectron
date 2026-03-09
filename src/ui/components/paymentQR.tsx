@@ -96,11 +96,11 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             <p className="text-gray-400 text-xs mt-2 font-bold uppercase tracking-widest leading-loose">Please try again</p>
           </div>
         ) : (imageDataUrl || imageUrl) && !imageFailed ? (
-          <div className="relative bg-white p-2 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5">
+          <div className="relative bg-white p-0 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5 w-[380px] h-[380px] flex items-center justify-center">
             <img
               src={imageDataUrl || imageUrl}
               alt="UPI Payment QR Code"
-              className="w-[440px] h-[440px] object-contain"
+              className="w-full h-full object-cover transform-gpu"
               onError={() => {
                 setImageFailed(true);
                 setErrorMsg("QR image unavailable. Switched to fallback.");
@@ -108,8 +108,10 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
             />
           </div>
         ) : (shortUrl || imageUrl) ? (
-          <div className="relative bg-white p-2 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5">
-            <QRCodeSVG value={shortUrl || imageUrl} size={440} level="H" includeMargin bgColor="#FFFFFF" fgColor="#000000" />
+          <div className="relative bg-white p-0 rounded-[32px] shadow-2xl overflow-hidden transition-transform group-hover:scale-[1.01] border border-black/5 w-[380px] h-[380px] flex items-center justify-center">
+            <div className="scale-[1.4] transform-gpu">
+              <QRCodeSVG value={shortUrl || imageUrl} size={380} level="H" bgColor="#FFFFFF" fgColor="#000000" />
+            </div>
           </div>
         ) : (
           <div className="relative bg-white shadow-xl rounded-[40px] p-12 flex flex-col items-center border border-black/5 w-[300px] h-[300px] justify-center text-center">
