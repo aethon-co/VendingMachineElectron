@@ -23,6 +23,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Countdown timer
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setSecondsLeft((s) => {
@@ -37,6 +38,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
     return () => clearInterval(timerRef.current!);
   }, []);
 
+  // Payment polling (sequential, no overlapping requests)
   useEffect(() => {
     let active = true;
 
@@ -44,14 +46,13 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
       if (!active || isExpired) return;
 
       try {
-        const result = await window.electron.checkTransactionStatus(qrId);
+        const result = await window.electron.checkQRPayment(qrId);
         if (result.paid && active) {
           clearInterval(timerRef.current!);
           onSuccess(result.paymentId || "");
           return;
         }
-      } catch (err) {
-        console.error("[PaymentQR] Polling error:", err);
+      } catch {
         setErrorMsg("Network error while checking payment.");
       }
 
@@ -104,7 +105,6 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
 
         {isExpired ? (
           <div className="relative bg-white shadow-xl rounded-[40px] p-12 flex flex-col items-center border border-black/5 w-[300px] h-[300px] justify-center text-center">
-
             <FaTimesCircle size={48} className="text-red-500/40 mb-4" />
             <p className="text-red-500 font-bold text-lg">QR Expired</p>
             <p className="text-gray-400 text-xs mt-2 font-bold uppercase tracking-widest leading-loose">Please try again</p>
@@ -141,6 +141,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
         <p className="text-3xl font-black text-gray-900 tabular-nums tracking-tight">₹{amount}</p>
       </div>
 
+      {/* Expiry Progress */}
       {!isExpired && (
         <div className="w-full mb-10 max-w-[320px]">
           <div className="flex justify-between items-end mb-3">
@@ -183,6 +184,5 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
     </div>
   );
 };
-
 
 export default PaymentQR;
