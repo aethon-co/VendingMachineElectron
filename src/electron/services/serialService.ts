@@ -5,6 +5,8 @@ const INTERVAL_MS = 7000;
 
 let port: SerialPort | null = null;
 let currentResolve: (() => void) | null = null;
+let isDispensing = false;
+const messageQueue: string[] = [];
 
 function processQueue() {
     if (isDispensing || messageQueue.length === 0) {
@@ -36,6 +38,33 @@ function processQueue() {
             }
         });
     }, INTERVAL_MS);
+}
+
+/**
+ * Initializes the serial port using the SERIAL_PORT environment variable.
+ */
+export async function initSerial(): Promise<void> {
+    const portPath = process.env.SERIAL_PORT || '/dev/ttyUSB0'; // Default fallback
+    console.log(`[SerialService] Attempting to open serial port: ${portPath}`);
+
+    return new Promise((resolve) => {
+        port = new SerialPort({
+            path: portPath,
+            baudRate: BAUD_RATE,
+            autoOpen: true
+        });
+
+        port.on('open', () => {
+            console.log(`[SerialService] Port ${portPath} opened successfully.`);
+            resolve();
+        });
+
+        port.on('error', (err) => {
+            console.error(`[SerialService] Error: ${err.message}`);
+            // Resolve anyway to allow the app to start even if the hardware isn't connected
+            resolve();
+        });
+    });
 }
 
 /**
