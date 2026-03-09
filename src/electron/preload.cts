@@ -10,4 +10,9 @@ contextBridge.exposeInMainWorld("electron", {
     checkQRPayment: async (qrId: string) => await ipcRenderer.invoke('vending:checkQRPayment', qrId),
     closePaymentQR: async (qrId: string) => await ipcRenderer.invoke('vending:closePaymentQR', qrId),
     purchase: async (items: { row: number, quantity: number }[]) => await ipcRenderer.invoke('vending:purchase', items),
+
+    // V2 Webhook Flow
+    createPaymentQRV2: async (amount: number, items: any[]) => await ipcRenderer.invoke('vending:createPaymentQRV2', { amount, items }),
+    checkTransactionStatus: async (qrId: string) => await ipcRenderer.invoke('vending:checkTransactionStatus', qrId),
+    dispenseItems: async (items: { row: number, quantity: number }[]) => await ipcRenderer.invoke('vending:dispenseItems', items),
 })

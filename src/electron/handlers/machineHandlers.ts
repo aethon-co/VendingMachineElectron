@@ -45,6 +45,22 @@ export function registerMachineHandlers() {
         await dispenseItems(dispenseArray);
         return response;
     });
+
+    ipcMain.handle('vending:dispenseItems', async (_, items: { row: number, quantity: number }[]) => {
+        const dispenseArray: string[] = [];
+        for (const item of items) {
+            const letter = rowToLetter[item.row];
+            if (letter) {
+                for (let i = 0; i < item.quantity; i++) {
+                    dispenseArray.push(letter);
+                }
+            }
+        }
+        if (dispenseArray.length > 0) {
+            await dispenseItems(dispenseArray);
+        }
+        return { status: "success" };
+    });
 }
 
 

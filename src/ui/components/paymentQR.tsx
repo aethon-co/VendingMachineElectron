@@ -44,7 +44,7 @@ const PaymentQR = ({ qrId, imageUrl, imageDataUrl, shortUrl, amount, onSuccess, 
       if (!active || isExpired) return;
 
       try {
-        const result = await window.electron.checkQRPayment(qrId);
+        const result = await window.electron.checkTransactionStatus(qrId);
         if (result.paid && active) {
           clearInterval(timerRef.current!);
           onSuccess(result.paymentId || "");

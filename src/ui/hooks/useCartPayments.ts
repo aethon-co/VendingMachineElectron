@@ -49,7 +49,23 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         if (cartTotal === 0) return;
         try {
             setIsCreatingQR(true);
-            const qrData = await window.electron.createPaymentQR(cartTotal);
+
+            // Prepare items metadata for V2 Flow
+            const purchaseItems = Object.keys(cart)
+                .map(itemId => {
+                    const item = items.find(i => i.id === itemId || i._id === itemId);
+                    if (!item) return null;
+                    return {
+                        row: Number(item.row),
+                        quantity: Number(cart[itemId]),
+                        name: item.name,
+                        price: item.price
+                    };
+                })
+                .filter((item): item is { row: number, quantity: number, name: string, price: number } => item !== null);
+
+            // Use V2 endpoint
+            const qrData = await window.electron.createPaymentQRV2(cartTotal, purchaseItems);
             setPaymentQRData(qrData);
             setShowPaymentQR(true);
         } catch (e: any) {
@@ -57,7 +73,7 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
         } finally {
             setIsCreatingQR(false);
         }
-    }, [cartTotal, setIsCreatingQR, setPaymentQRData, setShowPaymentQR]);
+    }, [cartTotal, cart, items, setIsCreatingQR, setPaymentQRData, setShowPaymentQR]);
 
     const handlePaymentSuccess = useCallback(async () => {
         if (isProcessing.current) return;
@@ -81,11 +97,11 @@ export function useCartPayments(items: any[], setItems: (items: any[]) => void) 
                 .filter((item): item is { row: number; quantity: number } => item !== null);
 
             if (purchaseItems.length > 0) {
-                // This now waits until ALL items are dispensed (7s each)
-                const res = await window.electron.purchase(purchaseItems);
-                if (res && res.items) {
-                    setItems(res.items);
-                }
+                // Use dispenseItems (Hardware only) because V2 backend already deducted stock via webhook
+                await window.electron.dispenseItems(purchaseItems);
+
+                // Optional: Re-fetch items to get updated quantities from backend 
+                // Since this hook doesn't have re-fetch logic, the machine list will update on next refresh/heartbeat
             }
         } catch (e) {
             console.error("Failed to deduct stock physically in backend", e);
